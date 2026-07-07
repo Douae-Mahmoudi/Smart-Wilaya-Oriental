@@ -1,0 +1,95 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'tondockerhubusername/utilisateur-service'
+        SONAR_PROJECT_KEY = 'utilisateur-service'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Check changes') {
+            steps {
+                script {
+                    def changes = sh(
+                        script: "git diff --name-only HEAD~1 HEAD || echo 'first-build'",
+                        returnStdout: true
+                    ).trim()
+                    if (!changes.contains('utilisateur-service/') && changes != 'first-build') {
+                        echo "Aucun changement dans utilisateur-service, pipeline ignoré"
+                        currentBuild.result = 'NOT_BUILT'
+                        error("Skip - rien à faire ici")
+                    }
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('utilisateur-service') {
+                    sh 'mvn clean compile -B'
+                }
+            }
+        }
+
+        stage('Tests') {
+            steps {
+                dir('utilisateur-service') {
+                    sh 'mvn test -B'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir('utilisateur-service') {
+                    withSonarQubeEnv('SonarQube') {
+                        sh "mvn sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.host.url=http://localhost:9000"
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 3, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                dir('utilisateur-service') {
+                    sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                        docker push ${DOCKER_IMAGE}:latest
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline utilisateur-service terminé avec succès"
+        }
+        failure {
+            echo "❌ Pipeline utilisateur-service a échoué"
+        }
+    }
+}

@@ -1,0 +1,14 @@
+.env
+*.env
+
+application.properties
+application-*.properties
+
+target/
+
+.idea/
+*.iml
+
+*.log
+
+.DS_Store
