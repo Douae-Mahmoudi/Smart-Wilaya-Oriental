@@ -51,21 +51,7 @@ class ProfilResponseTest {
 
         assertThat(response.getClass().getRecordComponents())
                 .extracting(java.lang.reflect.RecordComponent::getName)
+                .isNotEmpty()
                 .doesNotContain("idKeycloak");
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

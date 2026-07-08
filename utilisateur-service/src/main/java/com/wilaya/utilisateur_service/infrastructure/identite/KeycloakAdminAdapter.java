@@ -64,14 +64,15 @@ public class KeycloakAdminAdapter implements IdentiteProviderPort {
         user.setEnabled(true);
         user.setEmailVerified(true);
 
-        Response response = usersResource.create(user);
-        if (response.getStatus() != 201) {
-            throw new IllegalStateException("Échec de la création du compte Keycloak : " + response.getStatus());
+        UUID idKeycloak;
+        try (Response response = usersResource.create(user)) {
+            if (response.getStatus() != 201) {
+                throw new IllegalStateException("Échec de la création du compte Keycloak : " + response.getStatus());
+            }
+
+            String location = response.getLocation().getPath();
+            idKeycloak = UUID.fromString(location.substring(location.lastIndexOf('/') + 1));
         }
-
-        String location = response.getLocation().getPath();
-        UUID idKeycloak = UUID.fromString(location.substring(location.lastIndexOf('/') + 1));
-
 
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType(CredentialRepresentation.PASSWORD);
@@ -134,6 +135,3 @@ public class KeycloakAdminAdapter implements IdentiteProviderPort {
                 .map(u -> UUID.fromString(u.getId()));
     }
 }
-
-
-
