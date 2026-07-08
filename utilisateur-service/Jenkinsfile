@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'tondockerhubusername/utilisateur-service'
-        SONAR_PROJECT_KEY = 'utilisateur-service'
+        SONAR_PROJECT_KEY = 'Douae-Mahmoudi_utilisateur-service'
+        SONAR_ORGANIZATION = 'ton-organisation-sonarcloud'
     }
 
     stages {
@@ -46,11 +47,16 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('SonarCloud Analysis') {
             steps {
                 dir('utilisateur-service') {
-                    withSonarQubeEnv('SonarQube') {
-                        sh "mvn sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.host.url=http://localhost:9000"
+                    withSonarQubeEnv('SonarCloud') {
+                        sh """
+                            mvn sonar:sonar \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.organization=${SONAR_ORGANIZATION} \
+                            -Dsonar.host.url=https://sonarcloud.io
+                        """
                     }
                 }
             }
@@ -86,10 +92,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Pipeline utilisateur-service terminé avec succès"
+            echo "Pipeline utilisateur-service termine avec succes"
         }
         failure {
-            echo "❌ Pipeline utilisateur-service a échoué"
+            echo "Pipeline utilisateur-service a echoue"
         }
     }
 }
