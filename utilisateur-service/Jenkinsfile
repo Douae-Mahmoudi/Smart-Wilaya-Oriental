@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'tondockerhubusername/utilisateur-service'
-        SONAR_PROJECT_KEY = 'Douae-Mahmoudi_utilisateur-service'
-        SONAR_ORGANIZATION = 'ton-organisation-sonarcloud'
+        DOCKER_IMAGE = 'douaemahmoudi/utilisateur-service'
+        SONAR_PROJECT_KEY = 'Douae-Mahmoudi_wilaya-project'
+        SONAR_ORGANIZATION = 'douae-mahmoudi'
     }
 
     stages {
@@ -12,22 +12,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-            }
-        }
-
-        stage('Check changes') {
-            steps {
-                script {
-                    def changes = sh(
-                        script: "git diff --name-only HEAD~1 HEAD || echo 'first-build'",
-                        returnStdout: true
-                    ).trim()
-                    if (!changes.contains('utilisateur-service/') && changes != 'first-build') {
-                        echo "Aucun changement dans utilisateur-service, pipeline ignoré"
-                        currentBuild.result = 'NOT_BUILT'
-                        error("Skip - rien à faire ici")
-                    }
-                }
             }
         }
 
