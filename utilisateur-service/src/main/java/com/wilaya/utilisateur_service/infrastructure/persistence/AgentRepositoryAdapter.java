@@ -23,6 +23,18 @@ public class AgentRepositoryAdapter implements AgentRepository {
     }
 
     @Override
+    public Agent save(Agent agent) {
+        AgentJpaEntity entity = new AgentJpaEntity(
+                agent.getProfil().getIdKeycloak(),
+                agent.getIdEquipe(),
+                agent.getStatut()
+        );
+
+        jpaRepository.save(entity);
+        return agent;
+    }
+
+    @Override
     public List<Agent> findByIdEquipe(UUID idEquipe) {
         return jpaRepository.findByIdEquipe(idEquipe).stream()
                 .map(this::versAgent)
@@ -39,4 +51,10 @@ public class AgentRepositoryAdapter implements AgentRepository {
         }
         return agent;
     }
+
 }
+
+
+
+
+

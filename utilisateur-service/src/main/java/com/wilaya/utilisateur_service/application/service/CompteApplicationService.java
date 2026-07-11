@@ -3,6 +3,7 @@ package com.wilaya.utilisateur_service.application.service;
 import com.wilaya.utilisateur_service.domain.model.Agent;
 import com.wilaya.utilisateur_service.domain.model.ProfilUtilisateur;
 import com.wilaya.utilisateur_service.domain.port.in.CreerCompteUseCase;
+import com.wilaya.utilisateur_service.domain.port.out.AgentRepository;
 import com.wilaya.utilisateur_service.domain.port.out.EmailSenderPort;
 import com.wilaya.utilisateur_service.domain.port.out.IdentiteProviderPort;
 import com.wilaya.utilisateur_service.domain.port.out.ProfilUtilisateurRepository;
@@ -18,13 +19,16 @@ public class CompteApplicationService implements CreerCompteUseCase {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final ProfilUtilisateurRepository profilRepository;
+    private final AgentRepository agentRepository;
     private final IdentiteProviderPort identiteProvider;
     private final EmailSenderPort emailSender;
 
     public CompteApplicationService(ProfilUtilisateurRepository profilRepository,
+                                    AgentRepository agentRepository,
                                     IdentiteProviderPort identiteProvider,
                                     EmailSenderPort emailSender) {
         this.profilRepository = profilRepository;
+        this.agentRepository = agentRepository;
         this.identiteProvider = identiteProvider;
         this.emailSender = emailSender;
     }
@@ -41,6 +45,7 @@ public class CompteApplicationService implements CreerCompteUseCase {
 
         if ("AGENT".equals(role) && idEquipe != null) {
             Agent agent = new Agent(profil, idEquipe);
+            agentRepository.save(agent);
         }
 
         emailSender.envoyerIdentifiantsTemporaires(email, email, motDePasseTemporaire);
@@ -56,3 +61,8 @@ public class CompteApplicationService implements CreerCompteUseCase {
         return sb.toString();
     }
 }
+
+
+
+
+

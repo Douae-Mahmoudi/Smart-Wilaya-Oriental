@@ -5,5 +5,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AgentRepository {
+    Agent save(Agent agent);
     List<Agent> findByIdEquipe(UUID idEquipe);
 }
+
+
+
+
+

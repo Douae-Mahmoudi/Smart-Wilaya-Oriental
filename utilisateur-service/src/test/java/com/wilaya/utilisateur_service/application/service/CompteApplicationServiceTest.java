@@ -1,6 +1,8 @@
 package com.wilaya.utilisateur_service.application.service;
 
+import com.wilaya.utilisateur_service.domain.model.Agent;
 import com.wilaya.utilisateur_service.domain.model.ProfilUtilisateur;
+import com.wilaya.utilisateur_service.domain.port.out.AgentRepository;
 import com.wilaya.utilisateur_service.domain.port.out.EmailSenderPort;
 import com.wilaya.utilisateur_service.domain.port.out.IdentiteProviderPort;
 import com.wilaya.utilisateur_service.domain.port.out.ProfilUtilisateurRepository;
@@ -25,6 +27,9 @@ class CompteApplicationServiceTest {
     private ProfilUtilisateurRepository profilRepository;
 
     @Mock
+    private AgentRepository agentRepository;
+
+    @Mock
     private IdentiteProviderPort identiteProvider;
 
     @Mock
@@ -36,7 +41,7 @@ class CompteApplicationServiceTest {
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        service = new CompteApplicationService(profilRepository, identiteProvider, emailSender);
+        service = new CompteApplicationService(profilRepository, agentRepository, identiteProvider, emailSender);
     }
 
     @Test
@@ -110,18 +115,41 @@ class CompteApplicationServiceTest {
         UUID resultat = service.creerCompte("Alaoui", "Yassine", "yassine@example.com", "0611111111", "SUPERVISEUR", null);
 
         assertThat(resultat).isEqualTo(idKeycloakGenere);
+        verify(agentRepository, never()).save(any());
     }
 
-
     @Test
-    void creerCompteAvecRoleAgentEtIdEquipeNeSauvegardePasLAgentActuellement() {
+    void creerCompteAvecRoleAgentEtIdEquipeSauvegardeLAgent() {
         when(identiteProvider.creerCompte(anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(idKeycloakGenere);
         UUID idEquipe = UUID.randomUUID();
+        ArgumentCaptor<Agent> agentCaptor = ArgumentCaptor.forClass(Agent.class);
 
         UUID resultat = service.creerCompte("Benali", "Karim", "karim@example.com", "0600000000", "AGENT", idEquipe);
 
         assertThat(resultat).isEqualTo(idKeycloakGenere);
         verify(profilRepository, times(1)).save(any());
+        verify(agentRepository, times(1)).save(agentCaptor.capture());
+
+        Agent agentSauvegarde = agentCaptor.getValue();
+        assertThat(agentSauvegarde.getIdEquipe()).isEqualTo(idEquipe);
+        assertThat(agentSauvegarde.getProfil().getEmail()).isEqualTo("karim@example.com");
+    }
+
+    @Test
+    void creerCompteAvecRoleAgentMaisIdEquipeNullNeSauvegardePasLAgent() {
+        when(identiteProvider.creerCompte(anyString(), anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(idKeycloakGenere);
+
+        service.creerCompte("Benali", "Karim", "karim@example.com", "0600000000", "AGENT", null);
+
+        verify(agentRepository, never()).save(any());
     }
 }
+
+
+
+
+
+
+

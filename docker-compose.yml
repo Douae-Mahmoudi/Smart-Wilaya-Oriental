@@ -24,6 +24,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  postgres-ressource:
+    image: postgres:16
+    container_name: postgres-ressource
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1234"
+      POSTGRES_DB: ressource_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_ressource_data:/var/lib/postgresql/data
+
   utilisateur-service:
     build:
       context: ./utilisateur-service
@@ -46,7 +58,28 @@ services:
     volumes:
       - utilisateur_logs:/app/logs
 
+  ressource-service:
+    build:
+      context: ./ressource_service
+      dockerfile: Dockerfile
+    container_name: ressource-service
+    depends_on:
+      - postgres-ressource
+      - keycloak
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-ressource:5432/ressource_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+    ports:
+      - "7056:7056"
+    volumes:
+      - ressource_logs:/app/logs
+
 volumes:
   keycloak_data:
   postgres_data:
+  postgres_ressource_data:
   utilisateur_logs:
+  ressource_logs:
