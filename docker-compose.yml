@@ -120,10 +120,12 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
+      APP_UPLOAD_DIR: /app/uploads/signalements
     ports:
       - "7057:7057"
     volumes:
       - signalement_logs:/app/logs
+      - signalement_photos:/app/uploads/signalements
 
 volumes:
   keycloak_data:
@@ -134,3 +136,4 @@ volumes:
   utilisateur_logs:
   ressource_logs:
   signalement_logs:
+  signalement_photos:
