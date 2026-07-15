@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = RabbitMQConfig.class)
 class RabbitMQConfigTest {
-
+//MockBean
     @MockBean
     private ConnectionFactory connectionFactory;
 
