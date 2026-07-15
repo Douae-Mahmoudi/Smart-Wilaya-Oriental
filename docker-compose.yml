@@ -36,6 +36,30 @@ services:
     volumes:
       - postgres_ressource_data:/var/lib/postgresql/data
 
+  postgres-signalement:
+    image: postgres:16
+    container_name: postgres-signalement
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1234"
+      POSTGRES_DB: signalement_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_signalement_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
   utilisateur-service:
     build:
       context: ./utilisateur-service
@@ -77,9 +101,36 @@ services:
     volumes:
       - ressource_logs:/app/logs
 
+  signalement-service:
+    build:
+      context: ./signalement_service
+      dockerfile: Dockerfile
+    container_name: signalement-service
+    depends_on:
+      - postgres-signalement
+      - keycloak
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-signalement:5432/signalement_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+    ports:
+      - "7057:7057"
+    volumes:
+      - signalement_logs:/app/logs
+
 volumes:
   keycloak_data:
   postgres_data:
   postgres_ressource_data:
+  postgres_signalement_data:
+  rabbitmq_data:
   utilisateur_logs:
   ressource_logs:
+  signalement_logs:
