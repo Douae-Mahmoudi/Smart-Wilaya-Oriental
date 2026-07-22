@@ -71,17 +71,24 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                        docker push ${DOCKER_IMAGE}:latest
-                    """
+                timeout(time: 15, unit: 'MINUTES') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        retry(3) {
+                            sh """
+                                echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                                docker push ${DOCKER_IMAGE}:latest
+                            """
+                        }
+                    }
                 }
             }
         }
     }
 
     post {
+        always {
+            sh 'docker logout || true'
+        }
         success {
             echo "Pipeline affectation-service termine avec succes"
         }
@@ -90,3 +97,7 @@ pipeline {
         }
     }
 }
+
+
+
+
