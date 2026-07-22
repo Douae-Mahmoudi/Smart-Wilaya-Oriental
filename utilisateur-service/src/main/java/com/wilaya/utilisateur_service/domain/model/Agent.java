@@ -30,4 +30,5 @@ public class Agent {
     public ProfilUtilisateur getProfil() { return profil; }
     public UUID getIdEquipe() { return idEquipe; }
     public StatutAgent getStatut() { return statut; }
+    
 }

@@ -11,7 +11,10 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "signalement")
+@Table(name = "signalement",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"type", "zone", "adresse"})
+        })
 public class Signalement {
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -50,6 +53,8 @@ public class Signalement {
 
     private String zone;
 
+    private String adresse;
+
     @Enumerated(EnumType.STRING)
     private NiveauGravite gravite;
 
@@ -62,8 +67,9 @@ public class Signalement {
     protected Signalement() {
     }
 
+    // Constructeur modifié pour accepter l'adresse
     public Signalement(String cinDeclarant, TypeIntervention type, String description,
-                       String photoUrl, String zone, NiveauGravite gravite) {
+                       String photoUrl, String zone, NiveauGravite gravite, String adresse) {
         this.numeroSuivi = genererNumeroSuivi();
         this.cinDeclarant = cinDeclarant;
         this.type = type;
@@ -71,6 +77,7 @@ public class Signalement {
         this.photoUrl = photoUrl;
         this.zone = zone;
         this.gravite = gravite;
+        this.adresse = adresse;
         this.statut = StatutSignalement.SIGNALE;
         this.dateCreation = LocalDateTime.now();
     }
@@ -84,7 +91,6 @@ public class Signalement {
         return "SIG-" + date + "-" + suffixe;
     }
 
-
     public void changerStatut(StatutSignalement nouveauStatut) {
         Set<StatutSignalement> transitionsAutorisees = TRANSITIONS_VALIDES.get(this.statut);
         if (transitionsAutorisees == null || !transitionsAutorisees.contains(nouveauStatut)) {
@@ -93,7 +99,6 @@ public class Signalement {
         }
         this.statut = nouveauStatut;
     }
-
 
     public String masquerCin() {
         if (cinDeclarant == null || cinDeclarant.length() < 4) {
@@ -104,6 +109,7 @@ public class Signalement {
         return debut + "*".repeat(Math.max(cinDeclarant.length() - 4, 2)) + fin;
     }
 
+    // Getters
     public UUID getId() { return id; }
     public String getNumeroSuivi() { return numeroSuivi; }
     public String getCinDeclarant() { return cinDeclarant; }
@@ -111,7 +117,11 @@ public class Signalement {
     public String getDescription() { return description; }
     public String getPhotoUrl() { return photoUrl; }
     public String getZone() { return zone; }
+    public String getAdresse() { return adresse; }   // NOUVEAU GETTER
     public NiveauGravite getGravite() { return gravite; }
     public StatutSignalement getStatut() { return statut; }
     public LocalDateTime getDateCreation() { return dateCreation; }
+
+    // Setter (si besoin)
+    public void setAdresse(String adresse) { this.adresse = adresse; }
 }

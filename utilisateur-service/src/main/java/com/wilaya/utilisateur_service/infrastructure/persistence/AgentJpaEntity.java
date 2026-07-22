@@ -2,15 +2,18 @@ package com.wilaya.utilisateur_service.infrastructure.persistence;
 
 import com.wilaya.utilisateur_service.domain.model.StatutAgent;
 import jakarta.persistence.*;
+
 import java.util.UUID;
 
 @Entity
-@Table(name = "agents")
+@Table(name = "agent")
 public class AgentJpaEntity {
 
     @Id
+    @Column(name = "id_profil")
     private UUID idProfil;
 
+    @Column(name = "id_equipe")
     private UUID idEquipe;
 
     @Enumerated(EnumType.STRING)
@@ -26,11 +29,6 @@ public class AgentJpaEntity {
     }
 
     public UUID getIdProfil() { return idProfil; }
-    public void setIdProfil(UUID idProfil) { this.idProfil = idProfil; }
-
     public UUID getIdEquipe() { return idEquipe; }
-    public void setIdEquipe(UUID idEquipe) { this.idEquipe = idEquipe; }
-
     public StatutAgent getStatut() { return statut; }
-    public void setStatut(StatutAgent statut) { this.statut = statut; }
 }

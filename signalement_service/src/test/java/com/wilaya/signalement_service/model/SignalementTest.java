@@ -19,7 +19,8 @@ class SignalementTest {
                 "Description test",
                 "url",
                 "Zone A",
-                NiveauGravite.MOYENNE
+                NiveauGravite.MOYENNE,
+                "123 rue el Quods "
         );
     }
 
@@ -58,7 +59,7 @@ class SignalementTest {
     void testMasquageCin() {
         assertEquals("AB****56", signalement.masquerCin());
 
-        Signalement court = new Signalement("123", null, null, null, null, null);
+        Signalement court = new Signalement("123", null, null, null, null, null,"");
         assertEquals("****", court.masquerCin());
     }
 }

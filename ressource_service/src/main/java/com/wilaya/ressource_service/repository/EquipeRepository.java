@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public interface EquipeRepository extends JpaRepository<Equipe, UUID> {
 
-    @Query("SELECT e FROM Equipe e JOIN e.competences c " +
+    @Query("SELECT DISTINCT e FROM Equipe e JOIN FETCH e.competences c " +
             "WHERE c = :competence AND e.zoneCouverture = :zone AND e.statut = :statut")
     List<Equipe> findDisponiblesParCompetenceEtZone(
             @Param("competence") CategorieIntervention competence,

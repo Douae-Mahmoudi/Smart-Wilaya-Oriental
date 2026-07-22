@@ -41,8 +41,21 @@ class SignalementControllerTest {
     @Test
     @WithMockUser
     void testCreerSignalement() throws Exception {
-        CreerSignalementRequest request = new CreerSignalementRequest("AB123456", TypeIntervention.VOIRIE, "Desc", "Zone");
-        MockMultipartFile data = new MockMultipartFile("data", "", "application/json", objectMapper.writeValueAsBytes(request));
+        // CORRECTION : Fournissez une adresse non vide ("123 Rue Test")
+        CreerSignalementRequest request = new CreerSignalementRequest(
+                "AB123456",
+                TypeIntervention.VOIRIE,
+                "Desc",
+                "Zone",
+                "123 Rue Test"
+        );
+
+        MockMultipartFile data = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                objectMapper.writeValueAsBytes(request)
+        );
 
         Signalement s = Mockito.mock(Signalement.class);
         when(signalementService.creerSignalement(any(), any())).thenReturn(s);

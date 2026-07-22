@@ -5,56 +5,55 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class AgentJpaEntityTest {
 
     @Test
-    void constructeur_doitInitialiserTousLesChamps() {
+    void constructeurInitialiseTousLesChamps() {
         UUID idProfil = UUID.randomUUID();
         UUID idEquipe = UUID.randomUUID();
         StatutAgent statut = StatutAgent.ACTIF;
 
-        AgentJpaEntity agent = new AgentJpaEntity(idProfil, idEquipe, statut);
+        AgentJpaEntity entity = new AgentJpaEntity(idProfil, idEquipe, statut);
 
-        assertEquals(idProfil, agent.getIdProfil());
-        assertEquals(idEquipe, agent.getIdEquipe());
-        assertEquals(statut, agent.getStatut());
+        assertThat(entity.getIdProfil()).isEqualTo(idProfil);
+        assertThat(entity.getIdEquipe()).isEqualTo(idEquipe);
+        assertThat(entity.getStatut()).isEqualTo(statut);
     }
 
     @Test
-    void setIdProfil_doitModifierLaValeur() {
-        AgentJpaEntity agent = new AgentJpaEntity(UUID.randomUUID(), UUID.randomUUID(), StatutAgent.ACTIF);
-        UUID nouveauId = UUID.randomUUID();
+    void getIdProfilRenvoieLIdProfilCorrect() {
+        UUID idProfil = UUID.randomUUID();
 
-        agent.setIdProfil(nouveauId);
+        AgentJpaEntity entity = new AgentJpaEntity(idProfil, UUID.randomUUID(), StatutAgent.ACTIF);
 
-        assertEquals(nouveauId, agent.getIdProfil());
+        assertThat(entity.getIdProfil()).isEqualTo(idProfil);
     }
 
     @Test
-    void setIdEquipe_doitModifierLaValeur() {
-        AgentJpaEntity agent = new AgentJpaEntity(UUID.randomUUID(), UUID.randomUUID(), StatutAgent.ACTIF);
-        UUID nouvelleEquipe = UUID.randomUUID();
+    void getIdEquipeRenvoieLIdEquipeCorrect() {
+        UUID idEquipe = UUID.randomUUID();
 
-        agent.setIdEquipe(nouvelleEquipe);
+        AgentJpaEntity entity = new AgentJpaEntity(UUID.randomUUID(), idEquipe, StatutAgent.ACTIF);
 
-        assertEquals(nouvelleEquipe, agent.getIdEquipe());
+        assertThat(entity.getIdEquipe()).isEqualTo(idEquipe);
     }
 
     @Test
-    void setStatut_doitModifierLaValeur() {
-        AgentJpaEntity agent = new AgentJpaEntity(UUID.randomUUID(), UUID.randomUUID(), StatutAgent.ACTIF);
+    void getStatutRenvoieLeStatutCorrect() {
+        AgentJpaEntity entity = new AgentJpaEntity(UUID.randomUUID(), UUID.randomUUID(), StatutAgent.INACTIF);
 
-        agent.setStatut(StatutAgent.INACTIF);
-
-        assertEquals(StatutAgent.INACTIF, agent.getStatut());
+        assertThat(entity.getStatut()).isEqualTo(StatutAgent.INACTIF);
     }
 
     @Test
-    void constructeurProtege_doitCreerInstanceVide() throws Exception {
-        Object instance = AgentJpaEntity.class.getDeclaredConstructor().newInstance();
-        assertNotNull(instance);
+    void constructeurAccepteIdEquipeNull() {
+        UUID idProfil = UUID.randomUUID();
+
+        AgentJpaEntity entity = new AgentJpaEntity(idProfil, null, StatutAgent.ACTIF);
+
+        assertThat(entity.getIdProfil()).isEqualTo(idProfil);
+        assertThat(entity.getIdEquipe()).isNull();
     }
 }

@@ -18,7 +18,9 @@ class CreerSignalementResponseTest {
                 "Description",
                 "url",
                 "Zone A",
-                NiveauGravite.MOYENNE
+                NiveauGravite.MOYENNE,
+                "123 Rue Quods"
+
         );
 
         CreerSignalementResponse response = CreerSignalementResponse.depuis(signalement);

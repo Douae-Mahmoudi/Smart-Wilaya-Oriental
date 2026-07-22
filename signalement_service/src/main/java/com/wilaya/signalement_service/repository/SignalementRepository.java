@@ -21,7 +21,16 @@ public interface SignalementRepository extends JpaRepository<Signalement, UUID> 
 
     List<Signalement> findByZone(String zone);
 
+    // Méthode pour détecter les doublons par type + zone + adresse (nouvelle)
+    List<Signalement> findByTypeAndZoneAndAdresseAndDateCreationAfterAndStatutNotIn(
+            TypeIntervention type,
+            String zone,
+            String adresse,
+            LocalDateTime seuil,
+            List<StatutSignalement> statutsExclus
+    );
 
+    // Méthode pour détecter les doublons par type + zone (ancienne, conservée pour compatibilité)
     List<Signalement> findByTypeAndZoneAndDateCreationAfterAndStatutNotIn(
             TypeIntervention type,
             String zone,
@@ -29,6 +38,7 @@ public interface SignalementRepository extends JpaRepository<Signalement, UUID> 
             List<StatutSignalement> statutsExclus
     );
 
+    // Méthode pour détecter les doublons par CIN
     List<Signalement> findByCinDeclarantAndDateCreationAfterAndStatutNotIn(
             String cinDeclarant,
             LocalDateTime seuil,

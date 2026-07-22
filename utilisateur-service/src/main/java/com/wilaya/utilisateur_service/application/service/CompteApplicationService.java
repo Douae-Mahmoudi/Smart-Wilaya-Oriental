@@ -40,7 +40,8 @@ public class CompteApplicationService implements CreerCompteUseCase {
 
         UUID idKeycloak = identiteProvider.creerCompte(email, nom, prenom, motDePasseTemporaire, role);
 
-        ProfilUtilisateur profil = new ProfilUtilisateur(idKeycloak, nom, prenom, telephone, email);
+        // AJOUT DU RÔLE DANS LE CONSTRUCTEUR
+        ProfilUtilisateur profil = new ProfilUtilisateur(idKeycloak, nom, prenom, telephone, email, role);
         profilRepository.save(profil);
 
         if ("AGENT".equals(role) && idEquipe != null) {
@@ -61,8 +62,3 @@ public class CompteApplicationService implements CreerCompteUseCase {
         return sb.toString();
     }
 }
-
-
-
-
-

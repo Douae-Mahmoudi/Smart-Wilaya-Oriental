@@ -17,7 +17,8 @@ class SignalementResponseTest {
                 "Fuite d'eau",
                 "http://photo.url",
                 "Quartier Centre",
-                NiveauGravite.HAUTE
+                NiveauGravite.HAUTE,
+                ""
         );
 
         SignalementResponse response = SignalementResponse.depuis(signalement);

@@ -12,4 +12,7 @@ public interface IdentiteProviderPort {
     boolean verifierAncienMotDePasse(UUID idKeycloak, String ancienMotDePasse);
 
     Optional<UUID> trouverIdParEmail(String email);
+
+    // NOUVELLE MÉTHODE
+    void supprimerUtilisateur(UUID idKeycloak);
 }

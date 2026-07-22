@@ -48,6 +48,18 @@ services:
     volumes:
       - postgres_signalement_data:/var/lib/postgresql/data
 
+  postgres-affectation:
+    image: postgres:16
+    container_name: postgres-affectation
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1234"
+      POSTGRES_DB: affectation_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_affectation_data:/var/lib/postgresql/data
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -127,13 +139,95 @@ services:
       - signalement_logs:/app/logs
       - signalement_photos:/app/uploads/signalements
 
+  affectation-service:
+    build:
+      context: ./affectation_service
+      dockerfile: Dockerfile
+    container_name: affectation-service
+    depends_on:
+      - postgres-affectation
+      - keycloak
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-affectation:5432/affectation_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+    ports:
+      - "7058:7058"
+    volumes:
+      - affectation_logs:/app/logs
+
 volumes:
   keycloak_data:
   postgres_data:
   postgres_ressource_data:
   postgres_signalement_data:
+  postgres_affectation_data:
   rabbitmq_data:
   utilisateur_logs:
   ressource_logs:
   signalement_logs:
   signalement_photos:
+  affectation_logs:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

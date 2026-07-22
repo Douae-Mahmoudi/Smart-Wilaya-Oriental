@@ -15,5 +15,8 @@ public record CreerSignalementRequest(
         String description,
 
         @NotBlank(message = "La zone est obligatoire")
-        String zone
+        String zone,
+
+        @NotBlank(message = "L'adresse est obligatoire")
+        String adresse   // <-- NOUVEAU CHAMP
 ) { }

@@ -1,0 +1,92 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'douaemahmoudi/affectation-service'
+        SONAR_PROJECT_KEY = 'Douae-Mahmoudi_wilaya-project-affectation'
+        SONAR_ORGANIZATION = 'douae-mahmoudi'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('affectation_service') {
+                    sh 'mvn clean compile -B'
+                }
+            }
+        }
+
+        stage('Tests') {
+            steps {
+                dir('affectation_service') {
+                    sh 'mvn test -B'
+                }
+            }
+        }
+
+        stage('SonarCloud Analysis') {
+            steps {
+                dir('affectation_service') {
+                    withSonarQubeEnv('SonarCloud') {
+                        sh """
+                            mvn sonar:sonar \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.organization=${SONAR_ORGANIZATION} \
+                            -Dsonar.host.url=https://sonarcloud.io
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 3, unit: 'MINUTES') {
+                            def qg = waitForQualityGate abortPipeline: false
+                            echo "Quality Gate status: ${qg.status}"
+                        }
+                    } catch (Exception e) {
+                        echo "Quality Gate check ignore (webhook non configure) : ${e.message}"
+                    }
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                dir('affectation_service') {
+                    sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                        docker push ${DOCKER_IMAGE}:latest
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline affectation-service termine avec succes"
+        }
+        failure {
+            echo "Pipeline affectation-service a echoue"
+        }
+    }
+}

@@ -18,7 +18,8 @@ class SignalementPublicResponseTest {
                 "Description test",
                 "photo.jpg",
                 "Zone Nord",
-                NiveauGravite.HAUTE
+                NiveauGravite.HAUTE,
+                ""
         );
 
         SignalementPublicResponse response = SignalementPublicResponse.depuis(signalement);

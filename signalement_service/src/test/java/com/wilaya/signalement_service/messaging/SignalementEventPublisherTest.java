@@ -27,7 +27,7 @@ class SignalementEventPublisherTest {
     @Test
     void testPublierSignalementClassifieSucces() {
         Signalement signalement = new Signalement(
-                "AB123456", TypeIntervention.VOIRIE, "Desc", "url", "Zone", NiveauGravite.MOYENNE
+                "AB123456", TypeIntervention.VOIRIE, "Desc", "url", "Zone", NiveauGravite.MOYENNE,"124 Rue Quods"
         );
 
         eventPublisher.publierSignalementClassifie(signalement);
@@ -47,7 +47,7 @@ class SignalementEventPublisherTest {
     @Test
     void testPublierSignalementClassifieErreurNeBloquePas() {
         Signalement signalement = new Signalement(
-                "AB123456", TypeIntervention.VOIRIE, "Desc", "url", "Zone", NiveauGravite.MOYENNE
+                "AB123456", TypeIntervention.VOIRIE, "Desc", "url", "Zone", NiveauGravite.MOYENNE,"123 Rue quods"
         );
 
         doThrow(new RuntimeException("Rabbit error")).when(rabbitTemplate)

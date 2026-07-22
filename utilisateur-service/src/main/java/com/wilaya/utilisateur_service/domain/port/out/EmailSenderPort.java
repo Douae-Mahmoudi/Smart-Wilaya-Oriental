@@ -5,4 +5,6 @@ public interface EmailSenderPort {
     void envoyerIdentifiantsTemporaires(String destinataire, String email, String motDePasseTemporaire);
 
     void envoyerCodeReinitialisation(String destinataire, String code);
+
+    void envoyerNotificationGenerique(String destinataire, String message);
 }

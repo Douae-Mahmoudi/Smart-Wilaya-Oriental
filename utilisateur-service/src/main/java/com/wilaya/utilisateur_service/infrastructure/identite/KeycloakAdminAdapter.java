@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
 @Component
 public class KeycloakAdminAdapter implements IdentiteProviderPort {
 
@@ -37,7 +36,6 @@ public class KeycloakAdminAdapter implements IdentiteProviderPort {
         this.realm = realm;
         this.serverUrl = serverUrl;
         this.publicClientId = publicClientId;
-
 
         this.keycloak = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
@@ -133,5 +131,11 @@ public class KeycloakAdminAdapter implements IdentiteProviderPort {
         return users.stream()
                 .findFirst()
                 .map(u -> UUID.fromString(u.getId()));
+    }
+
+    @Override
+    public void supprimerUtilisateur(UUID idKeycloak) {
+        UserResource userResource = realmResource().users().get(idKeycloak.toString());
+        userResource.remove(); // La méthode retourne void dans cette version
     }
 }

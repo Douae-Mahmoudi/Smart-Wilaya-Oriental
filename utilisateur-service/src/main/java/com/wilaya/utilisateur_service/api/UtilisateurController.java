@@ -1,10 +1,7 @@
 package com.wilaya.utilisateur_service.api;
 
 import com.wilaya.utilisateur_service.api.dto.*;
-import com.wilaya.utilisateur_service.domain.port.in.ChangerMotDePasseUseCase;
-import com.wilaya.utilisateur_service.domain.port.in.CreerCompteUseCase;
-import com.wilaya.utilisateur_service.domain.port.in.ListerAgentsUseCase;
-import com.wilaya.utilisateur_service.domain.port.in.ModifierProfilUseCase;
+import com.wilaya.utilisateur_service.domain.port.in.*;
 import com.wilaya.utilisateur_service.domain.port.out.ProfilUtilisateurRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -25,18 +22,29 @@ public class UtilisateurController {
     private final ModifierProfilUseCase modifierProfilUseCase;
     private final ChangerMotDePasseUseCase changerMotDePasseUseCase;
     private final ListerAgentsUseCase listerAgentsUseCase;
+    private final ListerAdminsUseCase listerAdminsUseCase;
+    private final ListerSuperviseursUseCase listerSuperviseursUseCase;
+    private final SupprimerUtilisateurUseCase supprimerUtilisateurUseCase;
 
     public UtilisateurController(ProfilUtilisateurRepository profilRepository,
                                  CreerCompteUseCase creerCompteUseCase,
                                  ModifierProfilUseCase modifierProfilUseCase,
                                  ChangerMotDePasseUseCase changerMotDePasseUseCase,
-                                 ListerAgentsUseCase listerAgentsUseCase) {
+                                 ListerAgentsUseCase listerAgentsUseCase,
+                                 ListerAdminsUseCase listerAdminsUseCase,
+                                 ListerSuperviseursUseCase listerSuperviseursUseCase,
+                                 SupprimerUtilisateurUseCase supprimerUtilisateurUseCase) {
         this.profilRepository = profilRepository;
         this.creerCompteUseCase = creerCompteUseCase;
         this.modifierProfilUseCase = modifierProfilUseCase;
         this.changerMotDePasseUseCase = changerMotDePasseUseCase;
         this.listerAgentsUseCase = listerAgentsUseCase;
+        this.listerAdminsUseCase = listerAdminsUseCase;
+        this.listerSuperviseursUseCase = listerSuperviseursUseCase;
+        this.supprimerUtilisateurUseCase = supprimerUtilisateurUseCase;
     }
+
+    // === Endpoints existants ===
 
     @GetMapping("/moi")
     public ResponseEntity<ProfilResponse> monProfil(JwtAuthenticationToken authentication) {
@@ -73,11 +81,6 @@ public class UtilisateurController {
         return ResponseEntity.status(201).build();
     }
 
-    private UUID extraireIdKeycloak(JwtAuthenticationToken authentication) {
-        Jwt jwt = authentication.getToken();
-        return UUID.fromString(jwt.getSubject());
-    }
-
     @PatchMapping("/moi")
     public ResponseEntity<Void> modifierMonProfil(JwtAuthenticationToken authentication,
                                                   @Valid @RequestBody ModifierProfilRequest request) {
@@ -102,5 +105,39 @@ public class UtilisateurController {
                 .map(AgentResponse::depuis)
                 .toList();
         return ResponseEntity.ok(agents);
+    }
+
+    // === NOUVEAUX ENDPOINTS ===
+
+    @GetMapping("/admins")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AgentResponse>> listerAdmins() {
+        List<AgentResponse> admins = listerAdminsUseCase.listerAdmins().stream()
+                .map(AgentResponse::depuis)
+                .toList();
+        return ResponseEntity.ok(admins);
+    }
+
+    @GetMapping("/superviseurs")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    public ResponseEntity<List<AgentResponse>> listerSuperviseurs() {
+        List<AgentResponse> superviseurs = listerSuperviseursUseCase.listerSuperviseurs().stream()
+                .map(AgentResponse::depuis)
+                .toList();
+        return ResponseEntity.ok(superviseurs);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> supprimerUtilisateur(@PathVariable String id) {
+        supprimerUtilisateurUseCase.supprimer(UUID.fromString(id));
+        return ResponseEntity.noContent().build();
+    }
+
+    // === Méthode utilitaire ===
+
+    private UUID extraireIdKeycloak(JwtAuthenticationToken authentication) {
+        Jwt jwt = authentication.getToken();
+        return UUID.fromString(jwt.getSubject());
     }
 }

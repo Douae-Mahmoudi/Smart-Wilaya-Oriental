@@ -47,4 +47,13 @@ public class SmtpEmailAdapter implements EmailSenderPort {
                 """.formatted(code));
         mailSender.send(message);
     }
+
+    @Override
+    public void envoyerNotificationGenerique(String destinataire, String message) {
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(destinataire);
+        mail.setSubject("Nouvelle notification - Plateforme Wilaya");
+        mail.setText(message);
+        mailSender.send(mail);
+    }
 }

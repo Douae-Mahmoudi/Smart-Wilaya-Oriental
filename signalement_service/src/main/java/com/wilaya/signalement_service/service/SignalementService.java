@@ -55,7 +55,9 @@ public class SignalementService {
 
         var gravite = policyCalculGravite.calculer(request.type(), request.zone());
 
-        String photoUrl = fileStorageService.sauvegarder(photo);
+        String photoUrl = (photo != null && !photo.isEmpty())
+                ? fileStorageService.sauvegarder(photo)
+                : null;
 
         Signalement signalement = new Signalement(
                 request.cinDeclarant(),
@@ -63,10 +65,17 @@ public class SignalementService {
                 request.description(),
                 photoUrl,
                 request.zone(),
-                gravite
+                gravite,
+                request.adresse()   // <-- NOUVEAU : adresse passée au constructeur
         );
 
-        return repository.save(signalement);
+        signalement.changerStatut(StatutSignalement.CLASSIFIE);
+
+        Signalement signalementSauvegarde = repository.save(signalement);
+
+        eventPublisher.publierSignalementClassifie(signalementSauvegarde);
+
+        return signalementSauvegarde;
     }
 
     @Transactional(readOnly = true)
@@ -95,19 +104,22 @@ public class SignalementService {
         return sauvegarde;
     }
 
+    // Méthode de vérification des doublons modifiée
     private void verifierAbsenceDeDoublon(CreerSignalementRequest request) {
         LocalDateTime seuil = LocalDateTime.now().minusMinutes(DELAI_DOUBLON_MINUTES);
 
-        List<Signalement> doublonsParZone = repository.findByTypeAndZoneAndDateCreationAfterAndStatutNotIn(
-                request.type(), request.zone(), seuil, STATUTS_EXCLUS_DOUBLON);
+        // Doublon par type + zone + adresse
+        List<Signalement> doublonsParAdresse = repository.findByTypeAndZoneAndAdresseAndDateCreationAfterAndStatutNotIn(
+                request.type(), request.zone(), request.adresse(), seuil, STATUTS_EXCLUS_DOUBLON);
 
-        if (!doublonsParZone.isEmpty()) {
+        if (!doublonsParAdresse.isEmpty()) {
             throw new DoublonSignalementException(
                     "Un signalement similaire (" + request.type() + " / " + request.zone()
-                            + ") a deja ete enregistre recemment et est en cours de traitement. "
-                            + "Numero de suivi existant : " + doublonsParZone.get(0).getNumeroSuivi());
+                            + " / " + request.adresse() + ") a deja ete enregistre recemment et est en cours de traitement. "
+                            + "Numero de suivi existant : " + doublonsParAdresse.get(0).getNumeroSuivi());
         }
 
+        // Doublon par CIN
         List<Signalement> doublonsParCin = repository.findByCinDeclarantAndDateCreationAfterAndStatutNotIn(
                 request.cinDeclarant(), seuil, STATUTS_EXCLUS_DOUBLON);
 
