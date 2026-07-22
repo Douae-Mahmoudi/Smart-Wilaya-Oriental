@@ -28,7 +28,6 @@ class SecurityConfigTest {
 
     @Test
     void swaggerEndpoints_devraientEtreAccessibleSansAuthentification() throws Exception {
-        // Teste l'accès public au chemin Swagger configuré dans votre SecurityConfig
         mockMvc.perform(get("/swagger-ui/index.html"))
                 .andExpect(result -> {
                     int status = result.getResponse().getStatus();
@@ -41,7 +40,6 @@ class SecurityConfigTest {
 
     @Test
     void anyRequest_devraitEtreRejete_quandNonAuthentifie() throws Exception {
-        // Un endpoint protégé de l'application doit rejeter l'accès anonyme
         mockMvc.perform(get("/api/secured-endpoint"))
                 .andExpect(result -> {
                     int status = result.getResponse().getStatus();
@@ -55,7 +53,6 @@ class SecurityConfigTest {
     @Test
     @WithMockUser
     void anyRequest_devraitEtreAccepte_quandAuthentifie() throws Exception {
-        // Avec un utilisateur mocké, l'accès ne doit pas être bloqué par la sécurité (pas de 401/403)
         mockMvc.perform(get("/api/secured-endpoint"))
                 .andExpect(result -> {
                     int status = result.getResponse().getStatus();
