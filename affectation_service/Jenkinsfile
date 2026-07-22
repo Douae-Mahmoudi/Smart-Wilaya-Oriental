@@ -64,19 +64,20 @@ pipeline {
         stage('Docker Build') {
             steps {
                 dir('affectation_service') {
-                    sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                    sh "docker build -t ${DOCKER_IMAGE}:latest -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
                 }
             }
         }
 
         stage('Docker Push') {
             steps {
-                timeout(time: 15, unit: 'MINUTES') {
+                timeout(time: 30, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         retry(3) {
                             sh """
                                 echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
                                 docker push ${DOCKER_IMAGE}:latest
+                                docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
                             """
                         }
                     }
