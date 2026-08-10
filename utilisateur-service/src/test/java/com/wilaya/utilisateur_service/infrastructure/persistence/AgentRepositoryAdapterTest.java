@@ -31,6 +31,8 @@ class AgentRepositoryAdapterTest {
     @InjectMocks
     private AgentRepositoryAdapter agentRepositoryAdapter;
 
+    private static final String ROLE = "AGENT";
+
     private UUID idKeycloak;
     private UUID idEquipe;
     private ProfilUtilisateur profil;
@@ -40,7 +42,7 @@ class AgentRepositoryAdapterTest {
     void setUp() {
         idKeycloak = UUID.randomUUID();
         idEquipe = UUID.randomUUID();
-        profil = new ProfilUtilisateur(idKeycloak, "Alaoui", "Karim", "0612345678", "karim@example.com");
+        profil = new ProfilUtilisateur(idKeycloak, "Alaoui", "Karim", "0612345678", "karim@example.com", ROLE);
         agent = new Agent(profil, idEquipe);
     }
 
@@ -63,7 +65,7 @@ class AgentRepositoryAdapterTest {
     void findByIdEquipe_devrait_retourner_les_agents_reconstruits_avec_leur_profil() {
         AgentJpaEntity agentEntity = new AgentJpaEntity(idKeycloak, idEquipe, StatutAgent.ACTIF);
         ProfilUtilisateurJpaEntity profilEntity = new ProfilUtilisateurJpaEntity(
-                idKeycloak, "Alaoui", "Karim", "0612345678", "karim@example.com", true);
+                idKeycloak, "Alaoui", "Karim", "0612345678", "karim@example.com", ROLE, true);
 
         when(jpaRepository.findByIdEquipe(idEquipe)).thenReturn(List.of(agentEntity));
         when(profilJpaRepository.findById(idKeycloak)).thenReturn(Optional.of(profilEntity));
@@ -100,3 +102,46 @@ class AgentRepositoryAdapterTest {
                 .hasMessageContaining("Profil introuvable pour l'agent " + idKeycloak);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

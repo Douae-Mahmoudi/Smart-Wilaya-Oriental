@@ -19,6 +19,9 @@ public class TentativeAffectation {
     @Column(name = "id_equipe_proposee", nullable = false)
     private UUID idEquipeProposee;
 
+    @Column(name = "id_agent_accepteur")
+    private UUID idAgentAccepteur;
+
     @Column(nullable = false)
     private Double score;
 
@@ -44,6 +47,12 @@ public class TentativeAffectation {
     @Column(name = "zone")
     private String zone;
 
+    @Column(name = "description", length = 2000)
+    private String description;
+
+    @Column(name = "adresse")
+    private String adresse;
+
     @Version
     private Long version;
 
@@ -51,7 +60,8 @@ public class TentativeAffectation {
     }
 
     public TentativeAffectation(UUID idSignalement, UUID idEquipeProposee, Double score, int dureeValiditeMinutes,
-                                String categorie, String gravite, String zone) {
+                                String categorie, String gravite, String zone,
+                                String description, String adresse) {
         this.idSignalement = idSignalement;
         this.idEquipeProposee = idEquipeProposee;
         this.score = score;
@@ -61,17 +71,19 @@ public class TentativeAffectation {
         this.categorie = categorie;
         this.gravite = gravite;
         this.zone = zone;
+        this.description = description;
+        this.adresse = adresse;
     }
 
-    public void accepter() {
+    public void accepter(UUID idAgent) {
         if (this.statut != StatutTentative.EN_ATTENTE) {
             throw new IllegalStateException("Impossible d'accepter une tentative avec le statut " + this.statut);
         }
-        if (estExpiree()) {
-            this.statut = StatutTentative.EXPIREE;
-            throw new IllegalStateException("La tentative a expiré");
-        }
+        // Vérification du délai supprimée : l'agent peut accepter même après
+        // les 15 minutes (dateExpiration reste stockée à titre indicatif,
+        // mais n'est plus utilisée pour bloquer l'acceptation).
         this.statut = StatutTentative.ACCEPTEE;
+        this.idAgentAccepteur = idAgent;
         this.dateReponse = LocalDateTime.now(java.time.ZoneOffset.UTC);
     }
 
@@ -93,47 +105,32 @@ public class TentativeAffectation {
         }
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getIdSignalement() {
-        return idSignalement;
-    }
-
-    public UUID getIdEquipeProposee() {
-        return idEquipeProposee;
-    }
-
-    public Double getScore() {
-        return score;
-    }
-
-    public StatutTentative getStatut() {
-        return statut;
-    }
-
-    public LocalDateTime getDateProposition() {
-        return dateProposition;
-    }
-
-    public LocalDateTime getDateExpiration() {
-        return dateExpiration;
-    }
-
-    public LocalDateTime getDateReponse() {
-        return dateReponse;
-    }
-
-    public String getCategorie() {
-        return categorie;
-    }
-
-    public String getGravite() {
-        return gravite;
-    }
-
-    public String getZone() {
-        return zone;
-    }
+    public UUID getId() { return id; }
+    public UUID getIdSignalement() { return idSignalement; }
+    public UUID getIdEquipeProposee() { return idEquipeProposee; }
+    public UUID getIdAgentAccepteur() { return idAgentAccepteur; }
+    public Double getScore() { return score; }
+    public StatutTentative getStatut() { return statut; }
+    public LocalDateTime getDateProposition() { return dateProposition; }
+    public LocalDateTime getDateExpiration() { return dateExpiration; }
+    public LocalDateTime getDateReponse() { return dateReponse; }
+    public String getCategorie() { return categorie; }
+    public String getGravite() { return gravite; }
+    public String getZone() { return zone; }
+    public String getDescription() { return description; }
+    public String getAdresse() { return adresse; }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

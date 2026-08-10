@@ -4,33 +4,16 @@ import jakarta.persistence.*;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "signalement",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"type", "zone", "adresse"})
-        })
+@Table(name = "signalement")
 public class Signalement {
 
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final String CARACTERES_SUIVI = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-    private static final Map<StatutSignalement, Set<StatutSignalement>> TRANSITIONS_VALIDES = new EnumMap<>(StatutSignalement.class);
-
-    static {
-        TRANSITIONS_VALIDES.put(StatutSignalement.SIGNALE, EnumSet.of(StatutSignalement.CLASSIFIE, StatutSignalement.CLOTURE));
-        TRANSITIONS_VALIDES.put(StatutSignalement.CLASSIFIE, EnumSet.of(StatutSignalement.EN_RECHERCHE_EQUIPE, StatutSignalement.CLOTURE));
-        TRANSITIONS_VALIDES.put(StatutSignalement.EN_RECHERCHE_EQUIPE, EnumSet.of(StatutSignalement.AFFECTE, StatutSignalement.CLOTURE));
-        TRANSITIONS_VALIDES.put(StatutSignalement.AFFECTE, EnumSet.of(StatutSignalement.EN_INTERVENTION, StatutSignalement.EN_RECHERCHE_EQUIPE, StatutSignalement.CLOTURE));
-        TRANSITIONS_VALIDES.put(StatutSignalement.EN_INTERVENTION, EnumSet.of(StatutSignalement.RESOLU, StatutSignalement.CLOTURE));
-        TRANSITIONS_VALIDES.put(StatutSignalement.RESOLU, EnumSet.of(StatutSignalement.CLOTURE, StatutSignalement.EN_INTERVENTION));
-        TRANSITIONS_VALIDES.put(StatutSignalement.CLOTURE, EnumSet.noneOf(StatutSignalement.class));
-    }
 
     @Id
     @GeneratedValue
@@ -55,6 +38,12 @@ public class Signalement {
 
     private String adresse;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @Enumerated(EnumType.STRING)
     private NiveauGravite gravite;
 
@@ -64,12 +53,18 @@ public class Signalement {
     @Column(name = "date_creation", nullable = false, updatable = false)
     private LocalDateTime dateCreation;
 
+    @OneToMany(mappedBy = "signalement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ChangementStatut> historiqueStatuts = new ArrayList<>();
+
+    @Column(name = "dernier_message", length = 1000)
+    private String dernierMessage;
+
     protected Signalement() {
     }
 
-    // Constructeur modifié pour accepter l'adresse
     public Signalement(String cinDeclarant, TypeIntervention type, String description,
-                       String photoUrl, String zone, NiveauGravite gravite, String adresse) {
+                       String photoUrl, String zone, NiveauGravite gravite, String adresse,
+                       Double latitude, Double longitude) {
         this.numeroSuivi = genererNumeroSuivi();
         this.cinDeclarant = cinDeclarant;
         this.type = type;
@@ -78,6 +73,8 @@ public class Signalement {
         this.zone = zone;
         this.gravite = gravite;
         this.adresse = adresse;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.statut = StatutSignalement.SIGNALE;
         this.dateCreation = LocalDateTime.now();
     }
@@ -92,11 +89,6 @@ public class Signalement {
     }
 
     public void changerStatut(StatutSignalement nouveauStatut) {
-        Set<StatutSignalement> transitionsAutorisees = TRANSITIONS_VALIDES.get(this.statut);
-        if (transitionsAutorisees == null || !transitionsAutorisees.contains(nouveauStatut)) {
-            throw new IllegalStateException(
-                    "Transition invalide : impossible de passer de " + this.statut + " a " + nouveauStatut);
-        }
         this.statut = nouveauStatut;
     }
 
@@ -109,7 +101,12 @@ public class Signalement {
         return debut + "*".repeat(Math.max(cinDeclarant.length() - 4, 2)) + fin;
     }
 
-    // Getters
+    public void ajouterChangementStatut(StatutSignalement nouveauStatut, String message) {
+        ChangementStatut changement = new ChangementStatut(this, nouveauStatut, message);
+        this.historiqueStatuts.add(changement);
+        this.dernierMessage = message;
+    }
+
     public UUID getId() { return id; }
     public String getNumeroSuivi() { return numeroSuivi; }
     public String getCinDeclarant() { return cinDeclarant; }
@@ -117,11 +114,16 @@ public class Signalement {
     public String getDescription() { return description; }
     public String getPhotoUrl() { return photoUrl; }
     public String getZone() { return zone; }
-    public String getAdresse() { return adresse; }   // NOUVEAU GETTER
+    public String getAdresse() { return adresse; }
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
     public NiveauGravite getGravite() { return gravite; }
     public StatutSignalement getStatut() { return statut; }
     public LocalDateTime getDateCreation() { return dateCreation; }
 
-    // Setter (si besoin)
     public void setAdresse(String adresse) { this.adresse = adresse; }
+    public List<ChangementStatut> getHistoriqueStatuts() { return historiqueStatuts; }
+    public void setHistoriqueStatuts(List<ChangementStatut> historiqueStatuts) { this.historiqueStatuts = historiqueStatuts; }
+    public String getDernierMessage() { return dernierMessage; }
+    public void setDernierMessage(String dernierMessage) { this.dernierMessage = dernierMessage; }
 }

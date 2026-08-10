@@ -4,7 +4,6 @@ import com.wilaya.affectation_service.config.KeycloakRealmRoleConverter;
 import com.wilaya.affectation_service.config.SecurityConfig;
 import com.wilaya.affectation_service.controller.AffectationController;
 import com.wilaya.affectation_service.exception.GlobalExceptionHandler;
-import com.wilaya.affectation_service.model.StatutTentative;
 import com.wilaya.affectation_service.model.TentativeAffectation;
 import com.wilaya.affectation_service.service.AffectationService;
 import org.junit.jupiter.api.Test;
@@ -40,9 +39,11 @@ class AffectationControllerIT {
 
     private final UUID idSignalement = UUID.randomUUID();
     private final UUID idEquipe = UUID.randomUUID();
+    private final UUID idAgent = UUID.randomUUID();
 
     private TentativeAffectation tentativeEnAttente() {
-        return new TentativeAffectation(idSignalement, idEquipe, 0.75, 15, "EAU", "HAUTE", "Zone Nord");
+        return new TentativeAffectation(idSignalement, idEquipe, 0.75, 15, "EAU", "HAUTE", "Zone Nord",
+                "Description test", "Adresse test");
     }
 
     @Test
@@ -53,18 +54,17 @@ class AffectationControllerIT {
                 .andExpect(status().isUnauthorized());
     }
 
-
-
     @Test
     void accepter_devrait_autoriser_avec_role_agent_et_retourner_la_tentative_acceptee() throws Exception {
         TentativeAffectation tentative = tentativeEnAttente();
-        tentative.accepter();
+        tentative.accepter(idAgent);
         UUID idTentative = UUID.randomUUID();
 
-        when(affectationService.accepter(any(UUID.class), eq(idEquipe))).thenReturn(tentative);
+        when(affectationService.accepter(any(UUID.class), eq(idEquipe), any(UUID.class))).thenReturn(tentative);
 
         mockMvc.perform(post("/affectations/{id}/accepter", idTentative)
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_AGENT")))
+                        .with(jwt().jwt(builder -> builder.subject(idAgent.toString()))
+                                .authorities(new SimpleGrantedAuthority("ROLE_AGENT")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"idEquipe\":\"" + idEquipe + "\"}"))
                 .andExpect(status().isOk())
@@ -82,11 +82,12 @@ class AffectationControllerIT {
 
     @Test
     void accepter_devrait_retourner_409_si_le_service_leve_illegal_state() throws Exception {
-        when(affectationService.accepter(any(UUID.class), any(UUID.class)))
+        when(affectationService.accepter(any(UUID.class), any(UUID.class), any(UUID.class)))
                 .thenThrow(new IllegalStateException("Impossible d'accepter une tentative avec le statut ACCEPTEE"));
 
         mockMvc.perform(post("/affectations/{id}/accepter", UUID.randomUUID())
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_AGENT")))
+                        .with(jwt().jwt(builder -> builder.subject(idAgent.toString()))
+                                .authorities(new SimpleGrantedAuthority("ROLE_AGENT")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"idEquipe\":\"" + idEquipe + "\"}"))
                 .andExpect(status().isConflict());
@@ -115,8 +116,6 @@ class AffectationControllerIT {
                 .andExpect(jsonPath("$.statut").value("REFUSEE"));
     }
 
-
-
     @Test
     void refuser_devrait_retourner_409_si_le_service_leve_illegal_state() throws Exception {
         when(affectationService.refuser(any(UUID.class), any(UUID.class)))
@@ -134,8 +133,6 @@ class AffectationControllerIT {
         mockMvc.perform(get("/affectations/en-attente"))
                 .andExpect(status().isUnauthorized());
     }
-
-
 
     @Test
     void enAttente_devrait_autoriser_avec_role_superviseur_et_lister_les_tentatives() throws Exception {
@@ -199,11 +196,12 @@ class AffectationControllerIT {
                         .content("{\"idEquipe\":\"" + idEquipe + "\"}"))
                 .andExpect(status().isInternalServerError());
     }
+
     @Test
     void affecterManuellement_devrait_autoriser_avec_role_superviseur() throws Exception {
         TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.0, 15, null, null, null);
-        tentative.accepter();
+                idSignalement, idEquipe, 0.0, 15, null, null, null, null, null);
+        tentative.accepter(null);
 
         when(affectationService.affecterManuellement(eq(idSignalement), eq(idEquipe))).thenReturn(tentative);
 

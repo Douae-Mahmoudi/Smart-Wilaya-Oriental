@@ -4,6 +4,7 @@ import com.wilaya.utilisateur_service.domain.model.Agent;
 import com.wilaya.utilisateur_service.domain.port.in.ChangerMotDePasseUseCase;
 import com.wilaya.utilisateur_service.domain.port.in.ListerAgentsUseCase;
 import com.wilaya.utilisateur_service.domain.port.in.ModifierProfilUseCase;
+import com.wilaya.utilisateur_service.domain.port.in.ObtenirEquipeAgentUseCase;
 import com.wilaya.utilisateur_service.domain.port.out.AgentRepository;
 import com.wilaya.utilisateur_service.domain.port.out.IdentiteProviderPort;
 import com.wilaya.utilisateur_service.domain.port.out.ProfilUtilisateurRepository;
@@ -15,7 +16,8 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
-public class ProfilApplicationService implements ModifierProfilUseCase, ChangerMotDePasseUseCase, ListerAgentsUseCase {
+public class ProfilApplicationService implements ModifierProfilUseCase, ChangerMotDePasseUseCase,
+        ListerAgentsUseCase, ObtenirEquipeAgentUseCase {
 
     private final ProfilUtilisateurRepository profilRepository;
     private final IdentiteProviderPort identiteProviderPort;
@@ -58,5 +60,17 @@ public class ProfilApplicationService implements ModifierProfilUseCase, ChangerM
     @Override
     public List<Agent> listerParEquipe(UUID idEquipe) {
         return agentRepository.findByIdEquipe(idEquipe);
+    }
+
+    @Override
+    public List<Agent> listerTous() {
+        return agentRepository.findAll();
+    }
+
+    @Override
+    public UUID obtenirIdEquipe(UUID idKeycloak) {
+        return agentRepository.findByIdProfil(idKeycloak)
+                .map(Agent::getIdEquipe)
+                .orElseThrow(() -> new NoSuchElementException("Aucune équipe associée à cet agent"));
     }
 }

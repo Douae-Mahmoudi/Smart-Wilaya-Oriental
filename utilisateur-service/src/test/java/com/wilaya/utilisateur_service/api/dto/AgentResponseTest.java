@@ -11,10 +11,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AgentResponseTest {
 
+    private static final String ROLE = "AGENT";
+
     @Test
     void depuisMappeCorrectementUnAgentActif() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com"
+                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com", ROLE
         );
         UUID idEquipe = UUID.randomUUID();
         Agent agent = new Agent(profil, idEquipe);
@@ -29,7 +31,7 @@ class AgentResponseTest {
     @Test
     void depuisMappeCorrectementUnAgentInactif() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                UUID.randomUUID(), "Alaoui", "Yassine", "0611111111", "yassine@example.com"
+                UUID.randomUUID(), "Alaoui", "Yassine", "0611111111", "yassine@example.com", ROLE
         );
         Agent agent = new Agent(profil, UUID.randomUUID());
         agent.desactiver();
@@ -42,7 +44,7 @@ class AgentResponseTest {
     @Test
     void depuisRefleteUneReaffectationDEquipe() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com"
+                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com", ROLE
         );
         Agent agent = new Agent(profil, UUID.randomUUID());
         UUID nouvelleEquipe = UUID.randomUUID();
@@ -53,3 +55,42 @@ class AgentResponseTest {
         assertThat(response.idEquipe()).isEqualTo(nouvelleEquipe);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

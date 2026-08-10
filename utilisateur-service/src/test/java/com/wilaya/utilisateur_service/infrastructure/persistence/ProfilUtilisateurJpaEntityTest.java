@@ -18,10 +18,11 @@ class ProfilUtilisateurJpaEntityTest {
         String prenom = "Karim";
         String telephone = "0555123456";
         String email = "karim.benali@example.com";
+        String role = "AGENT";
         boolean notificationsActivees = true;
 
         ProfilUtilisateurJpaEntity profil = new ProfilUtilisateurJpaEntity(
-                idKeycloak, nom, prenom, telephone, email, notificationsActivees
+                idKeycloak, nom, prenom, telephone, email, role, notificationsActivees
         );
 
         assertEquals(idKeycloak, profil.getIdKeycloak());
@@ -29,6 +30,7 @@ class ProfilUtilisateurJpaEntityTest {
         assertEquals(prenom, profil.getPrenom());
         assertEquals(telephone, profil.getTelephone());
         assertEquals(email, profil.getEmail());
+        assertEquals(role, profil.getRole());
         assertTrue(profil.isNotificationsActivees());
     }
 
@@ -36,7 +38,7 @@ class ProfilUtilisateurJpaEntityTest {
     void constructeur_doitAccepterNotificationsDesactivees() {
         ProfilUtilisateurJpaEntity profil = new ProfilUtilisateurJpaEntity(
                 UUID.randomUUID(), "Meziane", "Sara", "0555987654",
-                "sara.meziane@example.com", false
+                "sara.meziane@example.com", "SUPERVISEUR", false
         );
 
         assertFalse(profil.isNotificationsActivees());
@@ -48,3 +50,38 @@ class ProfilUtilisateurJpaEntityTest {
         assertNotNull(instance);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

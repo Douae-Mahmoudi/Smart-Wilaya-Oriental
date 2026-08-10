@@ -9,10 +9,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ProfilResponseTest {
 
+    private static final String ROLE = "AGENT";
+
     @Test
     void depuisMappeTousLesChampsDuProfil() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com"
+                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com", ROLE
         );
 
         ProfilResponse response = ProfilResponse.depuis(profil);
@@ -27,7 +29,7 @@ class ProfilResponseTest {
     @Test
     void depuisRefleteLesModificationsDuProfil() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com"
+                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com", ROLE
         );
         profil.modifierProfil("Alaoui", "Yassine", "0611111111");
         profil.desactiverNotifications();
@@ -44,7 +46,7 @@ class ProfilResponseTest {
     void depuisNIncluPasLIdKeycloakDansLaReponse() {
 
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com"
+                UUID.randomUUID(), "Benali", "Karim", "0600000000", "karim@example.com", ROLE
         );
 
         ProfilResponse response = ProfilResponse.depuis(profil);
@@ -55,3 +57,46 @@ class ProfilResponseTest {
                 .doesNotContain("idKeycloak");
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

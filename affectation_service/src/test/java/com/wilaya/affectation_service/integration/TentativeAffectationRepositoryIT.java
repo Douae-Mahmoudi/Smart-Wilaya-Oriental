@@ -1,7 +1,8 @@
-package com.wilaya.affectation_service.repository;
+package com.wilaya.affectation_service.integration;
 
 import com.wilaya.affectation_service.model.StatutTentative;
 import com.wilaya.affectation_service.model.TentativeAffectation;
+import com.wilaya.affectation_service.repository.TentativeAffectationRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -18,7 +19,8 @@ class TentativeAffectationRepositoryIT {
     private TentativeAffectationRepository repository;
 
     private TentativeAffectation creerTentative(UUID idSignalement, UUID idEquipe) {
-        return new TentativeAffectation(idSignalement, idEquipe, 0.75, 15, "EAU", "HAUTE", "Zone Nord");
+        return new TentativeAffectation(idSignalement, idEquipe, 0.75, 15, "EAU", "HAUTE", "Zone Nord",
+                "Fuite d'eau importante", "Rue des Fleurs");
     }
 
     @Test
@@ -44,7 +46,7 @@ class TentativeAffectationRepositoryIT {
     void devrait_trouver_les_tentatives_par_statut() {
         TentativeAffectation enAttente = creerTentative(UUID.randomUUID(), UUID.randomUUID());
         TentativeAffectation acceptee = creerTentative(UUID.randomUUID(), UUID.randomUUID());
-        acceptee.accepter();
+        acceptee.accepter(UUID.randomUUID());
 
         repository.save(enAttente);
         repository.save(acceptee);
@@ -110,3 +112,89 @@ class TentativeAffectationRepositoryIT {
         assertThat(repository.findById(sauvegardee.getId())).isPresent();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -9,6 +9,8 @@ public record SignalementClassifieEvent(
         String type,
         String zone,
         String gravite,
-        LocalDateTime dateClassification
+        LocalDateTime dateClassification,
+        String description,
+        String adresse
 ) {
 }

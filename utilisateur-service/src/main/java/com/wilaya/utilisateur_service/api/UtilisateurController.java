@@ -25,6 +25,7 @@ public class UtilisateurController {
     private final ListerAdminsUseCase listerAdminsUseCase;
     private final ListerSuperviseursUseCase listerSuperviseursUseCase;
     private final SupprimerUtilisateurUseCase supprimerUtilisateurUseCase;
+    private final ObtenirEquipeAgentUseCase obtenirEquipeAgentUseCase;
 
     public UtilisateurController(ProfilUtilisateurRepository profilRepository,
                                  CreerCompteUseCase creerCompteUseCase,
@@ -33,7 +34,8 @@ public class UtilisateurController {
                                  ListerAgentsUseCase listerAgentsUseCase,
                                  ListerAdminsUseCase listerAdminsUseCase,
                                  ListerSuperviseursUseCase listerSuperviseursUseCase,
-                                 SupprimerUtilisateurUseCase supprimerUtilisateurUseCase) {
+                                 SupprimerUtilisateurUseCase supprimerUtilisateurUseCase,
+                                 ObtenirEquipeAgentUseCase obtenirEquipeAgentUseCase) {
         this.profilRepository = profilRepository;
         this.creerCompteUseCase = creerCompteUseCase;
         this.modifierProfilUseCase = modifierProfilUseCase;
@@ -42,9 +44,9 @@ public class UtilisateurController {
         this.listerAdminsUseCase = listerAdminsUseCase;
         this.listerSuperviseursUseCase = listerSuperviseursUseCase;
         this.supprimerUtilisateurUseCase = supprimerUtilisateurUseCase;
+        this.obtenirEquipeAgentUseCase = obtenirEquipeAgentUseCase;
     }
 
-    // === Endpoints existants ===
 
     @GetMapping("/moi")
     public ResponseEntity<ProfilResponse> monProfil(JwtAuthenticationToken authentication) {
@@ -52,6 +54,14 @@ public class UtilisateurController {
         return profilRepository.findByIdKeycloak(idKeycloak)
                 .map(profil -> ResponseEntity.ok(ProfilResponse.depuis(profil)))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/moi/equipe")
+    @PreAuthorize("hasRole('AGENT')")
+    public ResponseEntity<EquipeAgentResponse> monEquipe(JwtAuthenticationToken authentication) {
+        UUID idKeycloak = extraireIdKeycloak(authentication);
+        UUID idEquipe = obtenirEquipeAgentUseCase.obtenirIdEquipe(idKeycloak);
+        return ResponseEntity.ok(new EquipeAgentResponse(idEquipe));
     }
 
     @PostMapping("/agents")
@@ -100,14 +110,17 @@ public class UtilisateurController {
 
     @GetMapping("/agents")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
-    public ResponseEntity<List<AgentResponse>> listerAgentsParEquipe(@RequestParam UUID equipe) {
-        List<AgentResponse> agents = listerAgentsUseCase.listerParEquipe(equipe).stream()
+    public ResponseEntity<List<AgentResponse>> listerAgents(
+            @RequestParam(required = false) UUID equipe) {
+        List<AgentResponse> agents = (equipe != null
+                ? listerAgentsUseCase.listerParEquipe(equipe)
+                : listerAgentsUseCase.listerTous())
+                .stream()
                 .map(AgentResponse::depuis)
                 .toList();
         return ResponseEntity.ok(agents);
     }
 
-    // === NOUVEAUX ENDPOINTS ===
 
     @GetMapping("/admins")
     @PreAuthorize("hasRole('ADMIN')")
@@ -134,7 +147,6 @@ public class UtilisateurController {
         return ResponseEntity.noContent().build();
     }
 
-    // === Méthode utilitaire ===
 
     private UUID extraireIdKeycloak(JwtAuthenticationToken authentication) {
         Jwt jwt = authentication.getToken();

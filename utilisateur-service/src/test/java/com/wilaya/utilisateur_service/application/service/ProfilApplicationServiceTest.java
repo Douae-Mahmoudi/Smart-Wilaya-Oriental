@@ -40,7 +40,7 @@ class ProfilApplicationServiceTest {
     @BeforeEach
     void setUp() {
         service = new ProfilApplicationService(profilRepository, identiteProviderPort, agentRepository);
-        profilExistant = new ProfilUtilisateur(idKeycloak, "Benali", "Karim", "0600000000", "karim@example.com");
+        profilExistant = new ProfilUtilisateur(idKeycloak, "Benali", "Karim", "0600000000", "karim@example.com", "AGENT");
     }
 
 
@@ -120,19 +120,56 @@ class ProfilApplicationServiceTest {
 
         assertThat(resultat).isEmpty();
     }
+
+
+    @Test
+    void listerTousDelegueAuAgentRepositoryEtRenvoieTousLesAgents() {
+        UUID idEquipe1 = UUID.randomUUID();
+        UUID idEquipe2 = UUID.randomUUID();
+        Agent agent1 = new Agent(profilExistant, idEquipe1);
+        Agent agent2 = new Agent(
+                new ProfilUtilisateur(UUID.randomUUID(), "Dupont", "Jean", "0622222222", "jean@example.com", "AGENT"),
+                idEquipe2
+        );
+        List<Agent> agents = List.of(agent1, agent2);
+        when(agentRepository.findAll()).thenReturn(agents);
+
+        List<Agent> resultat = service.listerTous();
+
+        assertThat(resultat).containsExactly(agent1, agent2);
+        verify(agentRepository).findAll();
+    }
+
+    @Test
+    void listerTousRenvoieUneListeVideSiAucunAgent() {
+        when(agentRepository.findAll()).thenReturn(List.of());
+
+        List<Agent> resultat = service.listerTous();
+
+        assertThat(resultat).isEmpty();
+    }
+
+
+    @Test
+    void obtenirIdEquipeRetourneLIdEquipeSiAgentTrouve() {
+        UUID idEquipe = UUID.randomUUID();
+        Agent agent = new Agent(profilExistant, idEquipe);
+        when(agentRepository.findByIdProfil(idKeycloak)).thenReturn(Optional.of(agent));
+
+        UUID resultat = service.obtenirIdEquipe(idKeycloak);
+
+        assertThat(resultat).isEqualTo(idEquipe);
+        verify(agentRepository).findByIdProfil(idKeycloak);
+    }
+
+    @Test
+    void obtenirIdEquipeLanceNoSuchElementExceptionSiAucunAgentTrouve() {
+        when(agentRepository.findByIdProfil(idKeycloak)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.obtenirIdEquipe(idKeycloak))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("Aucune équipe associée à cet agent");
+
+        verify(agentRepository).findByIdProfil(idKeycloak);
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

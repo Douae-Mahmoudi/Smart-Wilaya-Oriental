@@ -18,7 +18,9 @@ class SignalementResponseTest {
                 "http://photo.url",
                 "Quartier Centre",
                 NiveauGravite.HAUTE,
-                ""
+                "12 Rue Test",
+                34.68,
+                -1.90
         );
 
         SignalementResponse response = SignalementResponse.depuis(signalement);
@@ -31,8 +33,84 @@ class SignalementResponseTest {
         assertEquals(signalement.getDescription(), response.description());
         assertEquals(signalement.getPhotoUrl(), response.photoUrl());
         assertEquals(signalement.getZone(), response.zone());
+        assertEquals(signalement.getAdresse(), response.adresse());
+        assertEquals(signalement.getLatitude(), response.latitude());
+        assertEquals(signalement.getLongitude(), response.longitude());
         assertEquals(signalement.getGravite(), response.gravite());
         assertEquals(signalement.getStatut(), response.statut());
         assertEquals(signalement.getDateCreation(), response.dateCreation());
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

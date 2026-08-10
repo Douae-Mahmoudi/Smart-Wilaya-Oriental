@@ -11,12 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = RabbitMQConfig.class)
+@TestPropertySource(properties = {
+        "rabbitmq.exchange.affectation=affectation.exchange",
+        "rabbitmq.routingkey.equipe-affectee=equipe.affectee",
+        "rabbitmq.queue.equipe-affectee=equipe.affectee.signalement.queue"
+})
 class RabbitMQConfigTest {
-//MockBean
+
     @MockBean
     private ConnectionFactory connectionFactory;
 
@@ -25,9 +31,12 @@ class RabbitMQConfigTest {
 
     @Test
     void beansShouldBeCreated() {
-        assertThat(context.getBean(TopicExchange.class)).isNotNull();
+        assertThat(context.getBean("signalementsExchange", TopicExchange.class)).isNotNull();
+        assertThat(context.getBean("affectationExchange", TopicExchange.class)).isNotNull();
         assertThat(context.getBean("signalementClassifieQueue", Queue.class)).isNotNull();
-        assertThat(context.getBean(Binding.class)).isNotNull();
+        assertThat(context.getBean("equipeAffecteeQueue", Queue.class)).isNotNull();
+        assertThat(context.getBean("bindingSignalementClassifie", Binding.class)).isNotNull();
+        assertThat(context.getBean("bindingEquipeAffectee", Binding.class)).isNotNull();
         assertThat(context.getBean(Jackson2JsonMessageConverter.class)).isNotNull();
         assertThat(context.getBean(RabbitTemplate.class)).isNotNull();
     }

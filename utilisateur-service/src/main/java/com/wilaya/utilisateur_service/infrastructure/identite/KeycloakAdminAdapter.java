@@ -136,6 +136,6 @@ public class KeycloakAdminAdapter implements IdentiteProviderPort {
     @Override
     public void supprimerUtilisateur(UUID idKeycloak) {
         UserResource userResource = realmResource().users().get(idKeycloak.toString());
-        userResource.remove(); // La méthode retourne void dans cette version
+        userResource.remove();
     }
 }

@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -19,6 +20,11 @@ public class MaterielController {
 
     public MaterielController(MaterielService materielService) {
         this.materielService = materielService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Materiel>> listerMateriels() {
+        return ResponseEntity.ok(materielService.listerMateriels());
     }
 
     @PostMapping
@@ -33,5 +39,11 @@ public class MaterielController {
             @Valid @RequestBody ChangerStatutRequest request) {
         StatutMateriel statut = StatutMateriel.valueOf(request.statut());
         return ResponseEntity.ok(materielService.changerStatut(id, statut));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> supprimerMateriel(@PathVariable UUID id) {
+        materielService.supprimerMateriel(id);
+        return ResponseEntity.noContent().build();
     }
 }

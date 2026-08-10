@@ -20,7 +20,8 @@ class AgentTest {
                 "Benali",
                 "Karim",
                 "0600000000",
-                "karim.benali@example.com"
+                "karim.benali@example.com",
+                "AGENT"
         );
         idEquipeInitiale = UUID.randomUUID();
         agent = new Agent(profil, idEquipeInitiale);
@@ -77,3 +78,46 @@ class AgentTest {
         assertThat(agent.getStatut()).isEqualTo(StatutAgent.ACTIF);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

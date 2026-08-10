@@ -18,10 +18,8 @@ public class ProfilUtilisateurJpaEntity {
     private String role;              // nouveau champ
     private boolean notificationsActivees;
 
-    // Constructeur par défaut (JPA)
     public ProfilUtilisateurJpaEntity() {}
 
-    // Constructeur avec tous les champs
     public ProfilUtilisateurJpaEntity(UUID idKeycloak, String nom, String prenom, String telephone,
                                       String email, String role, boolean notificationsActivees) {
         this.idKeycloak = idKeycloak;
@@ -33,7 +31,6 @@ public class ProfilUtilisateurJpaEntity {
         this.notificationsActivees = notificationsActivees;
     }
 
-    // Getters et setters
     public UUID getIdKeycloak() { return idKeycloak; }
     public void setIdKeycloak(UUID idKeycloak) { this.idKeycloak = idKeycloak; }
 

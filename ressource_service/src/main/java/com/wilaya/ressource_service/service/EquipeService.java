@@ -43,10 +43,22 @@ public class EquipeService {
                 .toList();
     }
 
+    public List<Equipe> listerToutes() {
+        return equipeRepository.findAll();
+    }
+
     public Equipe changerStatut(UUID id, StatutEquipe nouveauStatut) {
         Equipe equipe = equipeRepository.findById(id)
                 .orElseThrow(() -> new RessourceNonTrouveeException("Équipe introuvable"));
         equipe.changerStatut(nouveauStatut);
         return equipeRepository.save(equipe);
     }
+
+    public void supprimerEquipe(UUID id) {
+        if (!equipeRepository.existsById(id)) {
+            throw new RessourceNonTrouveeException("Équipe introuvable");
+        }
+        equipeRepository.deleteById(id);
+    }
 }
+

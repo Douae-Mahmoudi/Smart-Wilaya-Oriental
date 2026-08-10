@@ -30,17 +30,14 @@ class NotificationPublisherTest {
 
     @Test
     void publier_devraitEnvoyerEvenementAvecExchangeEtRoutingKeyCorrects() {
-        // Arrange
         NotificationEvent event = new NotificationEvent(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 "Une équipe vous a été affectée."
         );
 
-        // Act
         publisher.publier(event);
 
-        // Assert
         verify(rabbitTemplate).convertAndSend(EXCHANGE, ROUTING_KEY, event);
         verifyNoMoreInteractions(rabbitTemplate);
     }

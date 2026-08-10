@@ -37,6 +37,11 @@ public class EquipeController {
         return ResponseEntity.ok(equipeService.trouverDisponibles(competence, zone));
     }
 
+    @GetMapping
+    public ResponseEntity<List<Equipe>> listerToutesLesEquipes() {
+        return ResponseEntity.ok(equipeService.listerToutes());
+    }
+
     @PatchMapping("/{id}/statut")
     public ResponseEntity<Equipe> changerStatut(
             @PathVariable UUID id,
@@ -44,4 +49,11 @@ public class EquipeController {
         StatutEquipe statut = StatutEquipe.valueOf(request.statut());
         return ResponseEntity.ok(equipeService.changerStatut(id, statut));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> supprimerEquipe(@PathVariable UUID id) {
+        equipeService.supprimerEquipe(id);
+        return ResponseEntity.noContent().build();
+    }
 }
+

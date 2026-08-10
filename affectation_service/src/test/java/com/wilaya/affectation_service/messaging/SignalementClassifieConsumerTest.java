@@ -35,15 +35,108 @@ class SignalementClassifieConsumerTest {
                 "Voirie",
                 "Zone Nord",
                 "Elevee",
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                "Nid de poule dangereux sur la chaussée",
+                "Avenue Mohammed V"
         );
 
-        // Act
         consumer.ecouter(event);
 
-        // Assert
         verify(affectationService).demarrerAffectation(event);
         verifyNoMoreInteractions(affectationService);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

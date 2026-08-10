@@ -41,11 +41,12 @@ class ReinitialisationApplicationServiceTest {
     private final UUID idKeycloak = UUID.randomUUID();
     private ProfilUtilisateur profilExistant;
     private static final String EMAIL = "karim@example.com";
+    private static final String ROLE = "AGENT";
 
     @BeforeEach
     void setUp() {
         service = new ReinitialisationApplicationService(profilRepository, demandeRepository, identiteProvider, emailSender);
-        profilExistant = new ProfilUtilisateur(idKeycloak, "Benali", "Karim", "0600000000", EMAIL);
+        profilExistant = new ProfilUtilisateur(idKeycloak, "Benali", "Karim", "0600000000", EMAIL, ROLE);
     }
 
 
@@ -157,18 +158,3 @@ class ReinitialisationApplicationServiceTest {
         verifyNoInteractions(identiteProvider);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

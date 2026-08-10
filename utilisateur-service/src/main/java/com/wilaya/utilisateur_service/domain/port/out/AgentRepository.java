@@ -3,6 +3,7 @@ package com.wilaya.utilisateur_service.domain.port.out;
 import com.wilaya.utilisateur_service.domain.model.Agent;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AgentRepository {
@@ -10,4 +11,10 @@ public interface AgentRepository {
     Agent save(Agent agent);
 
     List<Agent> findByIdEquipe(UUID idEquipe);
+
+    List<Agent> findAll();
+
+    Optional<Agent> findByIdProfil(UUID idProfil);
+
+    void deleteByIdProfil(UUID idProfil);
 }

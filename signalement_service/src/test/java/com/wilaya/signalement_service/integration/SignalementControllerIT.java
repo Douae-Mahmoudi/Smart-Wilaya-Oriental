@@ -1,6 +1,7 @@
 package com.wilaya.signalement_service.integration;
 
 import com.wilaya.signalement_service.model.*;
+import com.wilaya.signalement_service.service.GeminiClient;
 import com.wilaya.signalement_service.service.SignalementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -39,9 +39,11 @@ class SignalementControllerIT {
     @MockBean
     private SignalementService signalementService;
 
+    @MockBean
+    private GeminiClient geminiClient;
+
     @BeforeEach
     void setup() {
-        // Cette configuration force le traitement de la sécurité AVANT le GlobalExceptionHandler
         this.mockMvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
@@ -49,14 +51,16 @@ class SignalementControllerIT {
     }
 
     private Signalement signalementExemple() {
-        return new Signalement("AB123456", TypeIntervention.EAU, "Fuite", "p.jpg", "Nord", NiveauGravite.MOYENNE, "Rue Test");
+        return new Signalement("AB123456", TypeIntervention.EAU, "Fuite", "p.jpg", "Nord", NiveauGravite.MOYENNE,
+                "Rue Test", 34.68, -1.90);
     }
 
     @Test
     void devrait_creer_un_signalement() throws Exception {
         when(signalementService.creerSignalement(any(), any())).thenReturn(signalementExemple());
 
-        String json = "{\"cinDeclarant\": \"AB123456\", \"type\": \"EAU\", \"description\": \"Fuite\", \"zone\": \"Nord\", \"adresse\": \"Rue Test\"}";
+        String json = "{\"cinDeclarant\": \"AB123456\", \"type\": \"EAU\", \"description\": \"Fuite\", "
+                + "\"zone\": \"Nord\", \"adresse\": \"Rue Test\", \"latitude\": 34.68, \"longitude\": -1.90}";
         MockMultipartFile data = new MockMultipartFile("data", "", "application/json", json.getBytes());
         MockMultipartFile photo = new MockMultipartFile("photo", "p.jpg", "image/jpeg", new byte[]{1});
 
@@ -75,6 +79,4 @@ class SignalementControllerIT {
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_SUPERVISEUR"))))
                 .andExpect(status().isOk());
     }
-
-
 }

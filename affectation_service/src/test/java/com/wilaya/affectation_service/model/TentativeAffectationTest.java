@@ -3,7 +3,6 @@ package com.wilaya.affectation_service.model;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,11 +12,19 @@ class TentativeAffectationTest {
 
     private final UUID idSignalement = UUID.randomUUID();
     private final UUID idEquipe = UUID.randomUUID();
+    private final UUID idAgent = UUID.randomUUID();
+
+    private TentativeAffectation creerTentative(int dureeValiditeMinutes) {
+        return new TentativeAffectation(
+                idSignalement, idEquipe, 0.5, dureeValiditeMinutes, "EAU", "HAUTE", "Zone Nord",
+                "Description test", "Adresse test");
+    }
 
     @Test
     void devrait_creer_une_tentative_en_attente_par_defaut() {
         TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.75, 15, "EAU", "HAUTE", "Zone Nord");
+                idSignalement, idEquipe, 0.75, 15, "EAU", "HAUTE", "Zone Nord",
+                "Description test", "Adresse test");
 
         assertThat(tentative.getStatut()).isEqualTo(StatutTentative.EN_ATTENTE);
         assertThat(tentative.getIdSignalement()).isEqualTo(idSignalement);
@@ -31,8 +38,7 @@ class TentativeAffectationTest {
 
     @Test
     void devrait_calculer_la_date_expiration_selon_la_duree_donnee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(15);
 
         LocalDateTime attendu = tentative.getDateProposition().plusMinutes(15);
 
@@ -41,73 +47,65 @@ class TentativeAffectationTest {
 
     @Test
     void ne_devrait_pas_etre_expiree_juste_apres_creation() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(15);
 
         assertThat(tentative.estExpiree()).isFalse();
     }
 
     @Test
     void devrait_etre_expiree_si_la_duree_de_validite_est_deja_depassee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, -1, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(-1);
 
         assertThat(tentative.estExpiree()).isTrue();
     }
 
-    // ---- accepter() ----
 
     @Test
-    void accepter_devrait_passer_le_statut_a_acceptee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+    void accepter_devrait_passer_le_statut_a_acceptee_et_enregistrer_lagent() {
+        TentativeAffectation tentative = creerTentative(15);
 
-        tentative.accepter();
+        tentative.accepter(idAgent);
 
         assertThat(tentative.getStatut()).isEqualTo(StatutTentative.ACCEPTEE);
         assertThat(tentative.getDateReponse()).isNotNull();
+        assertThat(tentative.getIdAgentAccepteur()).isEqualTo(idAgent);
     }
 
     @Test
     void accepter_devrait_rejeter_une_tentative_deja_acceptee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
-        tentative.accepter();
+        TentativeAffectation tentative = creerTentative(15);
+        tentative.accepter(idAgent);
 
-        assertThatThrownBy(tentative::accepter)
+        assertThatThrownBy(() -> tentative.accepter(idAgent))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("ACCEPTEE");
     }
 
     @Test
     void accepter_devrait_rejeter_une_tentative_deja_refusee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(15);
         tentative.refuser();
 
-        assertThatThrownBy(tentative::accepter)
+        assertThatThrownBy(() -> tentative.accepter(idAgent))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("REFUSEE");
     }
 
     @Test
     void accepter_devrait_lever_exception_et_marquer_expiree_si_delai_depasse() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, -1, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(-1);
 
-        assertThatThrownBy(tentative::accepter)
+        assertThatThrownBy(() -> tentative.accepter(idAgent))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("expiré");
 
         assertThat(tentative.getStatut()).isEqualTo(StatutTentative.EXPIREE);
     }
 
-    // ---- refuser() ----
 
     @Test
     void refuser_devrait_passer_le_statut_a_refusee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(15);
 
         tentative.refuser();
 
@@ -117,9 +115,8 @@ class TentativeAffectationTest {
 
     @Test
     void refuser_devrait_rejeter_une_tentative_deja_acceptee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
-        tentative.accepter();
+        TentativeAffectation tentative = creerTentative(15);
+        tentative.accepter(idAgent);
 
         assertThatThrownBy(tentative::refuser)
                 .isInstanceOf(IllegalStateException.class)
@@ -128,8 +125,7 @@ class TentativeAffectationTest {
 
     @Test
     void refuser_devrait_rejeter_une_tentative_deja_refusee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(15);
         tentative.refuser();
 
         assertThatThrownBy(tentative::refuser)
@@ -139,20 +135,17 @@ class TentativeAffectationTest {
 
     @Test
     void refuser_ne_verifie_pas_lexpiration_contrairement_a_accepter() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, -1, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(-1);
 
         tentative.refuser();
 
         assertThat(tentative.getStatut()).isEqualTo(StatutTentative.REFUSEE);
     }
 
-    // ---- marquerExpiree() ----
 
     @Test
     void marquerExpiree_devrait_passer_le_statut_a_expiree_si_en_attente() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(15);
 
         tentative.marquerExpiree();
 
@@ -161,9 +154,8 @@ class TentativeAffectationTest {
 
     @Test
     void marquerExpiree_ne_devrait_rien_changer_si_deja_acceptee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
-        tentative.accepter();
+        TentativeAffectation tentative = creerTentative(15);
+        tentative.accepter(idAgent);
 
         tentative.marquerExpiree();
 
@@ -172,8 +164,7 @@ class TentativeAffectationTest {
 
     @Test
     void marquerExpiree_ne_devrait_rien_changer_si_deja_refusee() {
-        TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+        TentativeAffectation tentative = creerTentative(15);
         tentative.refuser();
 
         tentative.marquerExpiree();
@@ -181,3 +172,92 @@ class TentativeAffectationTest {
         assertThat(tentative.getStatut()).isEqualTo(StatutTentative.REFUSEE);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

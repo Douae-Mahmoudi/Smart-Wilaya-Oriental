@@ -12,11 +12,13 @@ class AffectationResponseTest {
 
     private final UUID idSignalement = UUID.randomUUID();
     private final UUID idEquipe = UUID.randomUUID();
+    private final UUID idAgent = UUID.randomUUID();
 
     @Test
     void depuis_devrait_mapper_tous_les_champs_dune_tentative_en_attente() {
         TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.75, 15, "EAU", "HAUTE", "Zone Nord");
+                idSignalement, idEquipe, 0.75, 15, "EAU", "HAUTE", "Zone Nord",
+                "Description test", "Adresse test");
 
         AffectationResponse response = AffectationResponse.depuis(tentative);
 
@@ -24,6 +26,11 @@ class AffectationResponseTest {
         assertThat(response.idEquipeProposee()).isEqualTo(idEquipe);
         assertThat(response.score()).isEqualTo(0.75);
         assertThat(response.statut()).isEqualTo(StatutTentative.EN_ATTENTE);
+        assertThat(response.categorie()).isEqualTo("EAU");
+        assertThat(response.gravite()).isEqualTo("HAUTE");
+        assertThat(response.zone()).isEqualTo("Zone Nord");
+        assertThat(response.description()).isEqualTo("Description test");
+        assertThat(response.adresse()).isEqualTo("Adresse test");
         assertThat(response.dateProposition()).isEqualTo(tentative.getDateProposition());
         assertThat(response.dateExpiration()).isEqualTo(tentative.getDateExpiration());
         assertThat(response.dateReponse()).isNull();
@@ -32,8 +39,9 @@ class AffectationResponseTest {
     @Test
     void depuis_devrait_refleter_le_statut_accepte_et_la_date_reponse() {
         TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
-        tentative.accepter();
+                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord",
+                "Description test", "Adresse test");
+        tentative.accepter(idAgent);
 
         AffectationResponse response = AffectationResponse.depuis(tentative);
 
@@ -44,7 +52,8 @@ class AffectationResponseTest {
     @Test
     void depuis_devrait_refleter_le_statut_refuse() {
         TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord",
+                "Description test", "Adresse test");
         tentative.refuser();
 
         AffectationResponse response = AffectationResponse.depuis(tentative);
@@ -56,7 +65,8 @@ class AffectationResponseTest {
     @Test
     void depuis_devrait_avoir_id_null_pour_une_tentative_non_persistee() {
         TentativeAffectation tentative = new TentativeAffectation(
-                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord");
+                idSignalement, idEquipe, 0.5, 15, "EAU", "HAUTE", "Zone Nord",
+                "Description test", "Adresse test");
 
         AffectationResponse response = AffectationResponse.depuis(tentative);
 

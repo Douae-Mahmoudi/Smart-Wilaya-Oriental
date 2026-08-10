@@ -22,7 +22,8 @@ class SignalementRepositoryIT {
     private SignalementRepository repository;
 
     private Signalement creerSignalement(String cin, TypeIntervention type, String zone) {
-        return new Signalement(cin, type, "description test", "photo.jpg", zone, NiveauGravite.MOYENNE,"124 Rue Quods ");
+        return new Signalement(cin, type, "description test", "photo.jpg", zone, NiveauGravite.MOYENNE,
+                "124 Rue Quods ", 34.68, -1.90);
     }
 
     @Test
@@ -110,3 +111,73 @@ class SignalementRepositoryIT {
         assertThat(resultat).hasSize(2);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

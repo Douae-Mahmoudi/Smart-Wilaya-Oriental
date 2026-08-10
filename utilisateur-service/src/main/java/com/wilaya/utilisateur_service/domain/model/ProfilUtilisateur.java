@@ -12,7 +12,6 @@ public class ProfilUtilisateur {
     private final String role;          // NOUVEAU
     private boolean notificationsActivees;
 
-    // Constructeur avec rôle
     public ProfilUtilisateur(UUID idKeycloak, String nom, String prenom, String telephone, String email, String role) {
         if (email == null || !email.contains("@")) {
             throw new IllegalArgumentException("Email invalide");

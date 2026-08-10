@@ -27,7 +27,9 @@ public class SignalementEventPublisher {
                 signalement.getType(),
                 signalement.getZone(),
                 signalement.getGravite(),
-                signalement.getDateCreation()
+                signalement.getDateCreation(),
+                signalement.getDescription(),
+                signalement.getAdresse()
         );
         try {
             rabbitTemplate.convertAndSend(EXCHANGE, ROUTING_KEY_CLASSIFIE, event);

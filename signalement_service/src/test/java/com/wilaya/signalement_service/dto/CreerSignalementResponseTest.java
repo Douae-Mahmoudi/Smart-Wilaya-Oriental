@@ -19,8 +19,9 @@ class CreerSignalementResponseTest {
                 "url",
                 "Zone A",
                 NiveauGravite.MOYENNE,
-                "123 Rue Quods"
-
+                "123 Rue Quods",
+                34.68,
+                -1.90
         );
 
         CreerSignalementResponse response = CreerSignalementResponse.depuis(signalement);
@@ -31,3 +32,76 @@ class CreerSignalementResponseTest {
         assertEquals("Votre signalement a bien ete enregistre. Conservez precieusement ce numero de suivi pour consulter son etat.", response.message());
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

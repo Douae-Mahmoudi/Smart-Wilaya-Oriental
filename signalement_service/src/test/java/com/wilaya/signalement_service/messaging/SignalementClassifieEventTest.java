@@ -24,6 +24,8 @@ class SignalementClassifieEventTest {
         event.setZone("Zone A");
         event.setGravite(NiveauGravite.MOYENNE);
         event.setDateClassification(now);
+        event.setDescription("Nid de poule dangereux");
+        event.setAdresse("12 Rue Test");
 
         assertEquals(id, event.getSignalementId());
         assertEquals("SIG-123", event.getNumeroSuivi());
@@ -31,6 +33,8 @@ class SignalementClassifieEventTest {
         assertEquals("Zone A", event.getZone());
         assertEquals(NiveauGravite.MOYENNE, event.getGravite());
         assertEquals(now, event.getDateClassification());
+        assertEquals("Nid de poule dangereux", event.getDescription());
+        assertEquals("12 Rue Test", event.getAdresse());
     }
 
     @Test
@@ -38,7 +42,8 @@ class SignalementClassifieEventTest {
         UUID id = UUID.randomUUID();
         LocalDateTime now = LocalDateTime.now();
         SignalementClassifieEvent event = new SignalementClassifieEvent(
-                id, "SIG-456", TypeIntervention.EAU, "Zone B", NiveauGravite.HAUTE, now
+                id, "SIG-456", TypeIntervention.EAU, "Zone B", NiveauGravite.HAUTE, now,
+                "Fuite d'eau importante", "34 Avenue Test"
         );
 
         assertNotNull(event);
@@ -48,5 +53,7 @@ class SignalementClassifieEventTest {
         assertEquals("Zone B", event.getZone());
         assertEquals(NiveauGravite.HAUTE, event.getGravite());
         assertEquals(now, event.getDateClassification());
+        assertEquals("Fuite d'eau importante", event.getDescription());
+        assertEquals("34 Avenue Test", event.getAdresse());
     }
 }

@@ -41,13 +41,14 @@ class SignalementControllerTest {
     @Test
     @WithMockUser
     void testCreerSignalement() throws Exception {
-        // CORRECTION : Fournissez une adresse non vide ("123 Rue Test")
         CreerSignalementRequest request = new CreerSignalementRequest(
                 "AB123456",
                 TypeIntervention.VOIRIE,
                 "Desc",
                 "Zone",
-                "123 Rue Test"
+                "123 Rue Test",
+                34.68,
+                -1.90
         );
 
         MockMultipartFile data = new MockMultipartFile(
@@ -70,10 +71,10 @@ class SignalementControllerTest {
     @WithMockUser(roles = "AGENT")
     void testChangerStatutSucces() throws Exception {
         UUID id = UUID.randomUUID();
-        ChangerStatutRequest request = new ChangerStatutRequest("RESOLU");
+        ChangerStatutRequest request = new ChangerStatutRequest("RESOLU", "Résolu par l'agent");
 
         Signalement s = Mockito.mock(Signalement.class);
-        when(signalementService.changerStatut(any(), any())).thenReturn(s);
+        when(signalementService.changerStatut(any(), any(), any())).thenReturn(s);
 
         mockMvc.perform(patch("/signalements/" + id + "/statut")
                         .with(csrf())
@@ -98,3 +99,32 @@ class SignalementControllerTest {
                 .andExpect(status().isOk());
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -12,6 +12,11 @@ public record AffectationResponse(
         UUID idEquipeProposee,
         Double score,
         StatutTentative statut,
+        String categorie,
+        String gravite,
+        String zone,
+        String description,
+        String adresse,
         LocalDateTime dateProposition,
         LocalDateTime dateExpiration,
         LocalDateTime dateReponse
@@ -23,6 +28,11 @@ public record AffectationResponse(
                 tentative.getIdEquipeProposee(),
                 tentative.getScore(),
                 tentative.getStatut(),
+                tentative.getCategorie(),
+                tentative.getGravite(),
+                tentative.getZone(),
+                tentative.getDescription(),
+                tentative.getAdresse(),
                 tentative.getDateProposition(),
                 tentative.getDateExpiration(),
                 tentative.getDateReponse()

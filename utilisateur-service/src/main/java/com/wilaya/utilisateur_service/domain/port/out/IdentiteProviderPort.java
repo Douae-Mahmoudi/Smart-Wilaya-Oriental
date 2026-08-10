@@ -13,6 +13,5 @@ public interface IdentiteProviderPort {
 
     Optional<UUID> trouverIdParEmail(String email);
 
-    // NOUVELLE MÉTHODE
     void supprimerUtilisateur(UUID idKeycloak);
 }

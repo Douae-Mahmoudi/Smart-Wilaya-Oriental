@@ -27,7 +27,9 @@ class CreerSignalementRequestTest {
                 TypeIntervention.VOIRIE,
                 "Nid de poule sur la route",
                 "Zone Nord",
-                "123 Rue quods "
+                "123 Rue quods ",
+                34.68,
+                -1.90
         );
         assertTrue(validator.validate(request).isEmpty());
     }
@@ -35,29 +37,70 @@ class CreerSignalementRequestTest {
     @Test
     void testInvalidFields() {
         CreerSignalementRequest request = new CreerSignalementRequest(
-                "",    // cin
-                null,  // type
-                "",    // description
-                null,  // zone
-                ""     // adresse
+                "",
+                null,
+                "",
+                null,
+                "",
+                null,
+                null
         );
         var violations = validator.validate(request);
-        // Vous avez maintenant 5 champs invalidés (cin, type, description, zone, adresse)
-        assertEquals(5, violations.size());
+
+        assertEquals(6, violations.size());
     }
 
     @Test
     void testBlankFields() {
-        // " " est considéré comme blank, donc cin, description, zone, adresse sont invalidés (4 champs)
         CreerSignalementRequest request = new CreerSignalementRequest(
                 " ",
                 TypeIntervention.EAU,
                 " ",
                 " ",
-                " "
+                " ",
+                34.68,
+                -1.90
         );
         var violations = validator.validate(request);
-        // cin, description, zone, adresse => 4 violations
-        assertEquals(4, violations.size());
+
+        assertEquals(3, violations.size());
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

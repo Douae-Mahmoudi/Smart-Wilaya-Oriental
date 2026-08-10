@@ -31,8 +31,6 @@ class SecurityConfigTest {
         mockMvc.perform(get("/swagger-ui/index.html"))
                 .andExpect(result -> {
                     int status = result.getResponse().getStatus();
-                    // Soit Swagger répond (200), soit il redirige/renvoie vers une ressource valide,
-                    // l'important est qu'il ne soit pas bloqué par une erreur 401/403 d'authentification.
                     org.junit.jupiter.api.Assertions.assertNotEquals(401, status);
                     org.junit.jupiter.api.Assertions.assertNotEquals(403, status);
                 });

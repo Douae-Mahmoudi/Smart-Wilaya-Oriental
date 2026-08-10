@@ -31,17 +31,14 @@ class EquipeAffecteePublisherTest {
 
     @Test
     void publier_devraitEnvoyerEvenementAvecExchangeEtRoutingKeyCorrects() {
-        // Arrange
         EquipeAffecteeEvent event = new EquipeAffecteeEvent(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 LocalDateTime.now()
         );
 
-        // Act
         publisher.publier(event);
 
-        // Assert
         verify(rabbitTemplate).convertAndSend(EXCHANGE, ROUTING_KEY, event);
         verifyNoMoreInteractions(rabbitTemplate);
     }

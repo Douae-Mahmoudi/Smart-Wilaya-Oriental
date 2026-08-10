@@ -82,7 +82,7 @@ class CalculateurScoreTest {
 
         Double score = calculateurScore.calculer(equipe, signalement);
 
-        assertEquals(0.7, score); // Remplacé 0.9 par 0.7
+        assertEquals(0.7, score);
     }
 
     @Test

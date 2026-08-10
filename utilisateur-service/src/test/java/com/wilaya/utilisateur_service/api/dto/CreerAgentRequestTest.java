@@ -76,7 +76,6 @@ class CreerAgentRequestTest {
 
     @Test
     void telephoneNullEstAccepte() {
-        // telephone n'a aucune annotation de validation : optionnel
         var request = new CreerAgentRequest("Benali", "Karim", "karim@example.com", null, UUID.randomUUID());
 
         Set<ConstraintViolation<CreerAgentRequest>> violations = validator.validate(request);

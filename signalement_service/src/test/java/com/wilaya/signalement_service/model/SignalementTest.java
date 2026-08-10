@@ -2,8 +2,6 @@ package com.wilaya.signalement_service.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,7 +18,9 @@ class SignalementTest {
                 "url",
                 "Zone A",
                 NiveauGravite.MOYENNE,
-                "123 rue el Quods "
+                "123 rue el Quods ",
+                34.68,
+                -1.90
         );
     }
 
@@ -32,34 +32,16 @@ class SignalementTest {
     }
 
     @Test
-    void testChangementStatutValide() {
+    void testChangementStatut() {
         assertDoesNotThrow(() -> signalement.changerStatut(StatutSignalement.CLASSIFIE));
         assertEquals(StatutSignalement.CLASSIFIE, signalement.getStatut());
-    }
-
-    @Test
-    void testChangementStatutInvalide() {
-        assertThrows(IllegalStateException.class, () -> signalement.changerStatut(StatutSignalement.RESOLU));
-    }
-
-    @Test
-    void testClotureDepuisNimporteQuelEtat() {
-        signalement.changerStatut(StatutSignalement.CLASSIFIE);
-        assertDoesNotThrow(() -> signalement.changerStatut(StatutSignalement.CLOTURE));
-        assertEquals(StatutSignalement.CLOTURE, signalement.getStatut());
-    }
-
-    @Test
-    void testTransitionClotureVersAutreImpossible() {
-        signalement.changerStatut(StatutSignalement.CLOTURE);
-        assertThrows(IllegalStateException.class, () -> signalement.changerStatut(StatutSignalement.SIGNALE));
     }
 
     @Test
     void testMasquageCin() {
         assertEquals("AB****56", signalement.masquerCin());
 
-        Signalement court = new Signalement("123", null, null, null, null, null,"");
+        Signalement court = new Signalement("123", null, null, null, null, null, "", null, null);
         assertEquals("****", court.masquerCin());
     }
 }

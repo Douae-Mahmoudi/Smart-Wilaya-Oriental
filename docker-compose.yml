@@ -7,11 +7,11 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: http://keycloak:8080
     ports:
-      - "7080:8080"
+      - "8080:8080"
     volumes:
       - keycloak_data:/opt/keycloak/data
-
   postgres:
     image: postgres:16
     container_name: postgres
@@ -80,6 +80,7 @@ services:
     depends_on:
       - postgres
       - keycloak
+      - rabbitmq
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/utilisateur_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -89,6 +90,11 @@ services:
       KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET}
       KEYCLOAK_PUBLIC_CLIENT_ID: ${KEYCLOAK_PUBLIC_CLIENT_ID}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/wilaya-interventions
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
     ports:
       - "7055:7055"
     volumes:
@@ -108,6 +114,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: "1234"
       KEYCLOAK_SERVER_URL: http://keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/wilaya-interventions
+
     ports:
       - "7056:7056"
     volumes:
@@ -133,6 +141,11 @@ services:
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
       APP_UPLOAD_DIR: /app/uploads/signalements
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/wilaya-interventions
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+
+
+
     ports:
       - "7057:7057"
     volumes:
@@ -158,10 +171,30 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/wilaya-interventions
+
     ports:
       - "7058:7058"
     volumes:
       - affectation_logs:/app/logs
+
+  frontend:
+    build:
+      context: ./wilaya-frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_UTILISATEUR_API_URL: ${REACT_APP_UTILISATEUR_API_URL:-http://localhost:7055}
+        REACT_APP_RESSOURCE_API_URL: ${REACT_APP_RESSOURCE_API_URL:-http://localhost:7056}
+        REACT_APP_SIGNALEMENT_API_URL: ${REACT_APP_SIGNALEMENT_API_URL:-http://localhost:7057}
+        REACT_APP_AFFECTATION_API_URL: ${REACT_APP_AFFECTATION_API_URL:-http://localhost:7058}
+    container_name: frontend
+    depends_on:
+      - utilisateur-service
+      - ressource-service
+      - signalement-service
+      - affectation-service
+    ports:
+      - "3000:80"
 
 volumes:
   keycloak_data:
@@ -175,6 +208,91 @@ volumes:
   signalement_logs:
   signalement_photos:
   affectation_logs:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -7,9 +7,10 @@ import com.wilaya.affectation_service.service.AffectationService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,8 +28,10 @@ public class AffectationController {
     @PreAuthorize("hasRole('AGENT')")
     public ResponseEntity<AffectationResponse> accepter(
             @PathVariable UUID id,
-            @Valid @RequestBody AccepterAffectationRequest request) {
-        TentativeAffectation tentative = affectationService.accepter(id, request.idEquipe());
+            @Valid @RequestBody AccepterAffectationRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID idAgent = UUID.fromString(jwt.getSubject());
+        TentativeAffectation tentative = affectationService.accepter(id, request.idEquipe(), idAgent);
         return ResponseEntity.ok(AffectationResponse.depuis(tentative));
     }
 
@@ -50,6 +53,27 @@ public class AffectationController {
         return ResponseEntity.ok(reponse);
     }
 
+    @GetMapping("/sans-equipe")
+    @PreAuthorize("hasRole('SUPERVISEUR')")
+    public ResponseEntity<List<AffectationResponse>> sansEquipe() {
+        List<AffectationResponse> reponse = affectationService.listerSansEquipe().stream()
+                .map(AffectationResponse::depuis)
+                .toList();
+        return ResponseEntity.ok(reponse);
+    }
+
+    @GetMapping("/mes-affectations")
+    @PreAuthorize("hasRole('AGENT')")
+    public ResponseEntity<List<AffectationResponse>> mesAffectations(
+            @RequestParam UUID idEquipe,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID idAgent = UUID.fromString(jwt.getSubject());
+        List<AffectationResponse> reponse = affectationService.listerPourAgentEtEquipe(idEquipe, idAgent).stream()
+                .map(AffectationResponse::depuis)
+                .toList();
+        return ResponseEntity.ok(reponse);
+    }
+
     @PostMapping("/{idSignalement}/affecter-manuellement")
     @PreAuthorize("hasRole('SUPERVISEUR')")
     public ResponseEntity<AffectationResponse> affecterManuellement(
@@ -59,3 +83,80 @@ public class AffectationController {
         return ResponseEntity.ok(AffectationResponse.depuis(tentative));
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

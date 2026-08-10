@@ -18,7 +18,6 @@ class KeycloakRealmRoleConverterTest {
 
     @Test
     void convert_devraitExtraireRolesEtAjouterPrefixeRole_quandRealmAccessExiste() {
-        // Given
         Map<String, Object> realmAccess = Map.of("roles", List.of("AGENT", "SUPERVISEUR"));
         Map<String, Object> claims = Map.of("realm_access", realmAccess);
 
@@ -30,10 +29,9 @@ class KeycloakRealmRoleConverterTest {
                 claims
         );
 
-        // When
+
         AbstractAuthenticationToken authenticationToken = converter.convert(jwt);
 
-        // Then
         assertThat(authenticationToken).isNotNull();
         Collection<GrantedAuthority> authorities = authenticationToken.getAuthorities();
 
@@ -44,7 +42,6 @@ class KeycloakRealmRoleConverterTest {
 
     @Test
     void convert_devraitRetournerAuthoritiesVides_quandRealmAccessEstNul() {
-        // Given - Utilisation d'un claim non vide car Spring Security interdit une map de claims vide
         Jwt jwt = new Jwt(
                 "token-value",
                 Instant.now(),
@@ -53,18 +50,15 @@ class KeycloakRealmRoleConverterTest {
                 Map.of("sub", "user-id")
         );
 
-        // When
         AbstractAuthenticationToken authenticationToken = converter.convert(jwt);
 
-        // Then
         assertThat(authenticationToken).isNotNull();
         assertThat(authenticationToken.getAuthorities()).isEmpty();
     }
 
     @Test
     void convert_devraitRetournerAuthoritiesVides_quandRolesSontNuls() {
-        // Given
-        Map<String, Object> realmAccess = Map.of(); // Pas de clé "roles"
+        Map<String, Object> realmAccess = Map.of();
         Map<String, Object> claims = Map.of("realm_access", realmAccess);
 
         Jwt jwt = new Jwt(
@@ -75,10 +69,8 @@ class KeycloakRealmRoleConverterTest {
                 claims
         );
 
-        // When
         AbstractAuthenticationToken authenticationToken = converter.convert(jwt);
 
-        // Then
         assertThat(authenticationToken).isNotNull();
         assertThat(authenticationToken.getAuthorities()).isEmpty();
     }

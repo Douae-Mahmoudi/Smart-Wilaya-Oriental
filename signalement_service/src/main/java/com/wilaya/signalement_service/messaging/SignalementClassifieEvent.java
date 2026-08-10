@@ -16,18 +16,23 @@ public class SignalementClassifieEvent implements Serializable {
     private String zone;
     private NiveauGravite gravite;
     private LocalDateTime dateClassification;
+    private String description;
+    private String adresse;
 
     public SignalementClassifieEvent() {
     }
 
     public SignalementClassifieEvent(UUID signalementId, String numeroSuivi, TypeIntervention type,
-                                     String zone, NiveauGravite gravite, LocalDateTime dateClassification) {
+                                     String zone, NiveauGravite gravite, LocalDateTime dateClassification,
+                                     String description, String adresse) {
         this.signalementId = signalementId;
         this.numeroSuivi = numeroSuivi;
         this.type = type;
         this.zone = zone;
         this.gravite = gravite;
         this.dateClassification = dateClassification;
+        this.description = description;
+        this.adresse = adresse;
     }
 
     public UUID getSignalementId() { return signalementId; }
@@ -47,4 +52,10 @@ public class SignalementClassifieEvent implements Serializable {
 
     public LocalDateTime getDateClassification() { return dateClassification; }
     public void setDateClassification(LocalDateTime dateClassification) { this.dateClassification = dateClassification; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getAdresse() { return adresse; }
+    public void setAdresse(String adresse) { this.adresse = adresse; }
 }

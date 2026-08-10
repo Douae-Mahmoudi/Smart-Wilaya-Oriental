@@ -27,7 +27,7 @@ class ProfilUtilisateurRepositoryAdapterIT {
     @Test
     void devrait_sauvegarder_et_retrouver_un_profil_par_id() {
         UUID id = UUID.randomUUID();
-        ProfilUtilisateur profil = new ProfilUtilisateur(id, "Benali", "Ahmed", "0600000000", "ahmed@test.com");
+        ProfilUtilisateur profil = new ProfilUtilisateur(id, "Benali", "Ahmed", "0600000000", "ahmed@test.com", "AGENT");
 
         adapter.save(profil);
 
@@ -42,7 +42,7 @@ class ProfilUtilisateurRepositoryAdapterIT {
     @Test
     void devrait_retrouver_un_profil_par_email() {
         UUID id = UUID.randomUUID();
-        ProfilUtilisateur profil = new ProfilUtilisateur(id, "Alaoui", "Sara", "0600000001", "sara@test.com");
+        ProfilUtilisateur profil = new ProfilUtilisateur(id, "Alaoui", "Sara", "0600000001", "sara@test.com", "SUPERVISEUR");
         adapter.save(profil);
 
         Optional<ProfilUtilisateur> resultat = adapter.findByEmail("sara@test.com");
@@ -68,7 +68,7 @@ class ProfilUtilisateurRepositoryAdapterIT {
     @Test
     void devrait_conserver_les_notifications_activees_par_defaut() {
         UUID id = UUID.randomUUID();
-        ProfilUtilisateur profil = new ProfilUtilisateur(id, "Idrissi", "Youssef", "0600000002", "youssef@test.com");
+        ProfilUtilisateur profil = new ProfilUtilisateur(id, "Idrissi", "Youssef", "0600000002", "youssef@test.com", "AGENT");
         adapter.save(profil);
 
         Optional<ProfilUtilisateur> resultat = adapter.findByIdKeycloak(id);
@@ -77,32 +77,3 @@ class ProfilUtilisateurRepositoryAdapterIT {
         assertThat(resultat.get().isNotificationsActivees()).isTrue();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

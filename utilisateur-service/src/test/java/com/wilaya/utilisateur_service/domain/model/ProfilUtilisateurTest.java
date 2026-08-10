@@ -10,11 +10,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ProfilUtilisateurTest {
 
     private static final UUID ID_KEYCLOAK = UUID.randomUUID();
+    private static final String ROLE = "AGENT";
 
     @Test
     void creerUnProfilAvecUnEmailValideFonctionne() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com"
+                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com", ROLE
         );
 
         assertThat(profil.getIdKeycloak()).isEqualTo(ID_KEYCLOAK);
@@ -22,12 +23,13 @@ class ProfilUtilisateurTest {
         assertThat(profil.getPrenom()).isEqualTo("Karim");
         assertThat(profil.getTelephone()).isEqualTo("0600000000");
         assertThat(profil.getEmail()).isEqualTo("karim.benali@example.com");
+        assertThat(profil.getRole()).isEqualTo(ROLE);
     }
 
     @Test
     void lesNotificationsSontActiveesParDefaut() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com"
+                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com", ROLE
         );
 
         assertThat(profil.isNotificationsActivees()).isTrue();
@@ -36,7 +38,7 @@ class ProfilUtilisateurTest {
     @Test
     void creerUnProfilAvecUnEmailNullLanceUneException() {
         assertThatThrownBy(() -> new ProfilUtilisateur(
-                ID_KEYCLOAK, "Benali", "Karim", "0600000000", null
+                ID_KEYCLOAK, "Benali", "Karim", "0600000000", null, ROLE
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Email invalide");
@@ -45,7 +47,7 @@ class ProfilUtilisateurTest {
     @Test
     void creerUnProfilAvecUnEmailSansArobaseLanceUneException() {
         assertThatThrownBy(() -> new ProfilUtilisateur(
-                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "email-invalide"
+                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "email-invalide", ROLE
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Email invalide");
@@ -54,7 +56,7 @@ class ProfilUtilisateurTest {
     @Test
     void modifierProfilMetAJourNomPrenomEtTelephone() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com"
+                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com", ROLE
         );
 
         profil.modifierProfil("Alaoui", "Yassine", "0611111111");
@@ -67,7 +69,7 @@ class ProfilUtilisateurTest {
     @Test
     void modifierProfilNeChangePasLEmailNiLIdKeycloak() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com"
+                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com", ROLE
         );
 
         profil.modifierProfil("Alaoui", "Yassine", "0611111111");
@@ -79,7 +81,7 @@ class ProfilUtilisateurTest {
     @Test
     void desactiverNotificationsPasseLeFlagAFaux() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com"
+                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com", ROLE
         );
 
         profil.desactiverNotifications();
@@ -90,7 +92,7 @@ class ProfilUtilisateurTest {
     @Test
     void activerNotificationsPasseLeFlagAVrai() {
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com"
+                ID_KEYCLOAK, "Benali", "Karim", "0600000000", "karim.benali@example.com", ROLE
         );
         profil.desactiverNotifications();
 
@@ -99,6 +101,28 @@ class ProfilUtilisateurTest {
         assertThat(profil.isNotificationsActivees()).isTrue();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

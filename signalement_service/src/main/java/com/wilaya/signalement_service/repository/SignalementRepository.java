@@ -1,15 +1,14 @@
 package com.wilaya.signalement_service.repository;
 
+import com.wilaya.signalement_service.model.Signalement;
+import com.wilaya.signalement_service.model.StatutSignalement;
+import com.wilaya.signalement_service.model.TypeIntervention;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.wilaya.signalement_service.model.Signalement;
-import com.wilaya.signalement_service.model.StatutSignalement;
-import com.wilaya.signalement_service.model.TypeIntervention;
 
 public interface SignalementRepository extends JpaRepository<Signalement, UUID> {
 
@@ -21,7 +20,6 @@ public interface SignalementRepository extends JpaRepository<Signalement, UUID> 
 
     List<Signalement> findByZone(String zone);
 
-    // Méthode pour détecter les doublons par type + zone + adresse (nouvelle)
     List<Signalement> findByTypeAndZoneAndAdresseAndDateCreationAfterAndStatutNotIn(
             TypeIntervention type,
             String zone,
@@ -30,7 +28,6 @@ public interface SignalementRepository extends JpaRepository<Signalement, UUID> 
             List<StatutSignalement> statutsExclus
     );
 
-    // Méthode pour détecter les doublons par type + zone (ancienne, conservée pour compatibilité)
     List<Signalement> findByTypeAndZoneAndDateCreationAfterAndStatutNotIn(
             TypeIntervention type,
             String zone,
@@ -38,10 +35,98 @@ public interface SignalementRepository extends JpaRepository<Signalement, UUID> 
             List<StatutSignalement> statutsExclus
     );
 
-    // Méthode pour détecter les doublons par CIN
     List<Signalement> findByCinDeclarantAndDateCreationAfterAndStatutNotIn(
             String cinDeclarant,
             LocalDateTime seuil,
             List<StatutSignalement> statutsExclus
     );
+
+
+    List<Signalement> findByTypeAndStatutNotIn(TypeIntervention type, List<StatutSignalement> statutsExclus);
+
+
+    List<Signalement> findByTypeAndStatut(TypeIntervention type, StatutSignalement statut);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

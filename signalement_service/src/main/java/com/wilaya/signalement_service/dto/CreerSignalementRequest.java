@@ -17,6 +17,11 @@ public record CreerSignalementRequest(
         @NotBlank(message = "La zone est obligatoire")
         String zone,
 
-        @NotBlank(message = "L'adresse est obligatoire")
-        String adresse   // <-- NOUVEAU CHAMP
+        String adresse,
+
+        @NotNull(message = "La latitude est obligatoire")
+        Double latitude,
+
+        @NotNull(message = "La longitude est obligatoire")
+        Double longitude
 ) { }

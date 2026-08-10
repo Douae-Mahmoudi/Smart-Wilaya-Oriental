@@ -7,8 +7,12 @@ import com.wilaya.utilisateur_service.api.dto.ModifierProfilRequest;
 import com.wilaya.utilisateur_service.domain.model.ProfilUtilisateur;
 import com.wilaya.utilisateur_service.domain.port.in.ChangerMotDePasseUseCase;
 import com.wilaya.utilisateur_service.domain.port.in.CreerCompteUseCase;
+import com.wilaya.utilisateur_service.domain.port.in.ListerAdminsUseCase;
 import com.wilaya.utilisateur_service.domain.port.in.ListerAgentsUseCase;
+import com.wilaya.utilisateur_service.domain.port.in.ListerSuperviseursUseCase;
 import com.wilaya.utilisateur_service.domain.port.in.ModifierProfilUseCase;
+import com.wilaya.utilisateur_service.domain.port.in.ObtenirEquipeAgentUseCase;
+import com.wilaya.utilisateur_service.domain.port.in.SupprimerUtilisateurUseCase;
 import com.wilaya.utilisateur_service.domain.port.out.ProfilUtilisateurRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,12 +56,24 @@ class UtilisateurControllerTest {
     @MockBean
     private ListerAgentsUseCase listerAgentsUseCase;
 
+    @MockBean
+    private ListerAdminsUseCase listerAdminsUseCase;
+
+    @MockBean
+    private ListerSuperviseursUseCase listerSuperviseursUseCase;
+
+    @MockBean
+    private SupprimerUtilisateurUseCase supprimerUtilisateurUseCase;
+
+    @MockBean
+    private ObtenirEquipeAgentUseCase obtenirEquipeAgentUseCase;
+
     private final UUID idKeycloak = UUID.randomUUID();
 
 
     @Test
     void monProfilRenvoie200AvecLeProfilQuandIlExiste() throws Exception {
-        ProfilUtilisateur profil = new ProfilUtilisateur(idKeycloak, "Benali", "Karim", "0600000000", "karim@example.com");
+        ProfilUtilisateur profil = new ProfilUtilisateur(idKeycloak, "Benali", "Karim", "0600000000", "karim@example.com", "AGENT");
         when(profilRepository.findByIdKeycloak(idKeycloak)).thenReturn(Optional.of(profil));
 
         mockMvc.perform(get("/utilisateurs/moi")
@@ -211,20 +227,3 @@ class UtilisateurControllerTest {
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

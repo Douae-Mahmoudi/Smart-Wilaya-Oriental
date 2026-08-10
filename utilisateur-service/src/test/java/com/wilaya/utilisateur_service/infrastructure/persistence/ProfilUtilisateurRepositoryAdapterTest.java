@@ -18,6 +18,8 @@ import static org.mockito.Mockito.when;
 
 class ProfilUtilisateurRepositoryAdapterTest {
 
+    private static final String ROLE = "AGENT";
+
     private ProfilUtilisateurJpaRepository jpaRepository;
     private ProfilUtilisateurRepositoryAdapter adapter;
 
@@ -31,7 +33,7 @@ class ProfilUtilisateurRepositoryAdapterTest {
     void save_doitPersisterEntiteEtRetournerProfil() {
         UUID idKeycloak = UUID.randomUUID();
         ProfilUtilisateur profil = new ProfilUtilisateur(
-                idKeycloak, "Benali", "Karim", "0555123456", "karim.benali@example.com"
+                idKeycloak, "Benali", "Karim", "0555123456", "karim.benali@example.com", ROLE
         );
 
         ProfilUtilisateur resultat = adapter.save(profil);
@@ -44,7 +46,7 @@ class ProfilUtilisateurRepositoryAdapterTest {
     void findByIdKeycloak_doitRetournerProfilSiTrouve() {
         UUID idKeycloak = UUID.randomUUID();
         ProfilUtilisateurJpaEntity entity = new ProfilUtilisateurJpaEntity(
-                idKeycloak, "Benali", "Karim", "0555123456", "karim.benali@example.com", true
+                idKeycloak, "Benali", "Karim", "0555123456", "karim.benali@example.com", ROLE, true
         );
 
         when(jpaRepository.findById(idKeycloak)).thenReturn(Optional.of(entity));
@@ -73,7 +75,7 @@ class ProfilUtilisateurRepositoryAdapterTest {
     void findByEmail_doitRetournerProfilSiTrouve() {
         String email = "sara.meziane@example.com";
         ProfilUtilisateurJpaEntity entity = new ProfilUtilisateurJpaEntity(
-                UUID.randomUUID(), "Meziane", "Sara", "0555987654", email, false
+                UUID.randomUUID(), "Meziane", "Sara", "0555987654", email, ROLE, false
         );
 
         when(jpaRepository.findByEmail(email)).thenReturn(Optional.of(entity));

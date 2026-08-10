@@ -42,6 +42,12 @@ public class SignalementController {
         return ResponseEntity.status(201).body(CreerSignalementResponse.depuis(signalement));
     }
 
+    @PostMapping("/verifier-similaire-resolu")
+    public ResponseEntity<SimilaireResoluResponse> verifierSimilaireResolu(
+            @Valid @RequestBody VerifierSimilaireResoluRequest request) {
+        return ResponseEntity.ok(signalementService.verifierSimilaireResolu(request));
+    }
+
     @GetMapping("/photos/{nomFichier}")
     public ResponseEntity<Resource> obtenirPhoto(@PathVariable String nomFichier) throws IOException {
         Path fichier = fileStorageService.resoudre(nomFichier);
@@ -64,7 +70,7 @@ public class SignalementController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('SUPERVISEUR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
     public ResponseEntity<List<SignalementResponse>> lister(
             @RequestParam(required = false) TypeIntervention type,
             @RequestParam(required = false) StatutSignalement statut,
@@ -83,6 +89,36 @@ public class SignalementController {
         return ResponseEntity.ok(reponse);
     }
 
+    @GetMapping("/carte")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    public ResponseEntity<List<SignalementCarteResponse>> pourCarte() {
+        List<SignalementCarteResponse> reponse = signalementService.listerTout().stream()
+                .filter(s -> s.getLatitude() != null && s.getLongitude() != null)
+                .map(SignalementCarteResponse::depuis)
+                .toList();
+        return ResponseEntity.ok(reponse);
+    }
+
+    @GetMapping("/statistiques")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISEUR')")
+    public ResponseEntity<StatistiquesSignalementResponse> statistiques() {
+        return ResponseEntity.ok(signalementService.calculerStatistiques());
+    }
+
+    @GetMapping("/{id}/details")
+    @PreAuthorize("hasAnyRole('AGENT', 'SUPERVISEUR')")
+    public ResponseEntity<SignalementResponse> obtenirDetails(@PathVariable UUID id) {
+        Signalement signalement = signalementService.trouverParId(id);
+        return ResponseEntity.ok(SignalementResponse.depuis(signalement));
+    }
+
+    @GetMapping("/{id}/statut")
+    @PreAuthorize("hasAnyRole('AGENT', 'SUPERVISEUR')")
+    public ResponseEntity<StatutActuelResponse> obtenirStatut(@PathVariable UUID id) {
+        Signalement signalement = signalementService.trouverParId(id);
+        return ResponseEntity.ok(new StatutActuelResponse(signalement.getStatut().name()));
+    }
+
     @PatchMapping("/{id}/statut")
     @PreAuthorize("hasAnyRole('AGENT', 'SUPERVISEUR')")
     public ResponseEntity<SignalementResponse> changerStatut(
@@ -90,7 +126,90 @@ public class SignalementController {
             @Valid @RequestBody ChangerStatutRequest request) {
 
         StatutSignalement nouveauStatut = StatutSignalement.valueOf(request.statut());
-        Signalement signalement = signalementService.changerStatut(id, nouveauStatut);
+        Signalement signalement = signalementService.changerStatut(id, nouveauStatut, request.message());
         return ResponseEntity.ok(SignalementResponse.depuis(signalement));
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
