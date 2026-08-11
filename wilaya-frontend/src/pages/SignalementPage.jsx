@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Construction, Lightbulb, Droplet, Trash2, Trees, Camera, CheckCircle2, MapPin, AlertTriangle } from 'lucide-react';
 import LocationPicker from '../components/LocationPicker';
- 
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7057';
- 
+
 const TYPES = [
   { value: 'EAU', label: 'Eau', icon: Droplet },
   { value: 'ELECTRICITE', label: 'Électricité', icon: Lightbulb },
@@ -12,10 +12,10 @@ const TYPES = [
   { value: 'PROPRETE', label: 'Propreté', icon: Trash2 },
   { value: 'ESPACES_VERTS', label: 'Espaces verts', icon: Trees },
 ];
- 
+
 const MAX_DESCRIPTION = 500;
-const MAX_PHOTO_SIZE = 5 * 1024 * 1024; 
- 
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
+
 export default function SignalementPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -24,7 +24,7 @@ export default function SignalementPage() {
   const [error, setError] = useState(null);
   const [numeroSuivi, setNumeroSuivi] = useState(null);
   const [avertissementSimilaire, setAvertissementSimilaire] = useState(null);
- 
+
   const [form, setForm] = useState({
     cinDeclarant: '',
     type: '',
@@ -37,13 +37,21 @@ export default function SignalementPage() {
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoError, setPhotoError] = useState(null);
- 
+
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
- 
+
   const handleMapSelect = (lat, lng) => {
     setForm((prev) => ({ ...prev, latitude: lat, longitude: lng }));
   };
- 
+
+  const handleLieuResolu = ({ zone, adresse }) => {
+    setForm((prev) => ({
+      ...prev,
+      zone: zone || prev.zone,
+      adresse: adresse || prev.adresse,
+    }));
+  };
+
   const handlePhotoChange = (file) => {
     setPhotoError(null);
     if (!file) return;
@@ -58,7 +66,7 @@ export default function SignalementPage() {
     setPhoto(file);
     setPhotoPreview(URL.createObjectURL(file));
   };
- 
+
   const isStep1Valid =
     form.cinDeclarant.trim() &&
     form.type &&
@@ -66,7 +74,7 @@ export default function SignalementPage() {
     form.zone.trim() &&
     form.latitude !== null &&
     form.longitude !== null;
- 
+
   const goToStep2 = () => {
     if (!isStep1Valid) {
       setError(
@@ -79,7 +87,7 @@ export default function SignalementPage() {
     setError(null);
     setStep(2);
   };
- 
+
   const envoyerSignalement = async () => {
     setLoading(true);
     setError(null);
@@ -90,12 +98,12 @@ export default function SignalementPage() {
         new Blob([JSON.stringify(form)], { type: 'application/json' })
       );
       if (photo) formData.append('photo', photo);
- 
+
       const response = await fetch(`${API_BASE_URL}/signalements`, {
         method: 'POST',
         body: formData,
       });
- 
+
       if (!response.ok) {
         let messageServeur = `Erreur ${response.status}`;
         try {
@@ -105,7 +113,7 @@ export default function SignalementPage() {
         }
         throw new Error(messageServeur);
       }
- 
+
       const data = await response.json();
       setNumeroSuivi(data.numeroSuivi);
     } catch (err) {
@@ -114,7 +122,7 @@ export default function SignalementPage() {
       setLoading(false);
     }
   };
- 
+
   const verifierPuisEnvoyer = async () => {
     setVerification(true);
     setError(null);
@@ -130,7 +138,7 @@ export default function SignalementPage() {
           longitude: form.longitude,
         }),
       });
- 
+
       if (response.ok) {
         const data = await response.json();
         if (data.existe) {
@@ -144,7 +152,7 @@ export default function SignalementPage() {
     setVerification(false);
     envoyerSignalement();
   };
- 
+
   if (numeroSuivi) {
     return (
       <section className="min-h-[70vh] flex items-center justify-center px-6 py-24 bg-slate-50">
@@ -173,7 +181,7 @@ export default function SignalementPage() {
       </section>
     );
   }
- 
+
   if (avertissementSimilaire) {
     return (
       <section className="min-h-[70vh] flex items-center justify-center px-6 py-24 bg-slate-50">
@@ -204,7 +212,7 @@ export default function SignalementPage() {
       </section>
     );
   }
- 
+
   return (
     <section className="min-h-[80vh] bg-slate-50 py-16 px-6">
       <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8">
@@ -218,11 +226,11 @@ export default function SignalementPage() {
             style={{ width: step === 1 ? '50%' : '100%' }}
           />
         </div>
- 
+
         {error && (
           <div className="bg-red-50 text-red-600 text-sm rounded-xl px-4 py-3 mb-6">{error}</div>
         )}
- 
+
         {step === 1 && (
           <div className="space-y-6">
             <div>
@@ -235,7 +243,7 @@ export default function SignalementPage() {
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
               />
             </div>
- 
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Type d'intervention
@@ -258,7 +266,7 @@ export default function SignalementPage() {
                 ))}
               </div>
             </div>
- 
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Description détaillée
@@ -276,7 +284,7 @@ export default function SignalementPage() {
                 {form.description.length} / {MAX_DESCRIPTION}
               </p>
             </div>
- 
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Localisation</label>
               <div className="grid grid-cols-2 gap-3 mb-3">
@@ -295,7 +303,7 @@ export default function SignalementPage() {
                   className="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
                 />
               </div>
- 
+
               <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
                 <MapPin className="w-3.5 h-3.5 text-blue-700" />
                 Cliquez sur la carte pour indiquer l'emplacement exact du problème
@@ -305,6 +313,7 @@ export default function SignalementPage() {
                   latitude={form.latitude}
                   longitude={form.longitude}
                   onChange={handleMapSelect}
+                  onLieuResolu={handleLieuResolu}
                 />
               </div>
               {form.latitude !== null && (
@@ -313,7 +322,7 @@ export default function SignalementPage() {
                 </p>
               )}
             </div>
- 
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Photo (optionnel)
@@ -341,7 +350,7 @@ export default function SignalementPage() {
               />
               {photoError && <p className="text-xs text-red-600 mt-1">{photoError}</p>}
             </div>
- 
+
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
@@ -360,7 +369,7 @@ export default function SignalementPage() {
             </div>
           </div>
         )}
- 
+
         {step === 2 && (
           <div className="space-y-6">
             <h2 className="text-sm font-semibold text-slate-700">Récapitulatif de votre signalement</h2>
@@ -383,9 +392,9 @@ export default function SignalementPage() {
                 <dt className="text-slate-500">Zone</dt>
                 <dd className="text-slate-900 font-medium">{form.zone}</dd>
               </div>
-              <div className="flex justify-between py-3">
-                <dt className="text-slate-500">Adresse</dt>
-                <dd className="text-slate-900 font-medium">{form.adresse || 'Non renseignée'}</dd>
+              <div className="py-3">
+                <dt className="text-slate-500 mb-1">Adresse</dt>
+                <dd className="text-slate-900 font-medium pl-1">{form.adresse || 'Non renseignée'}</dd>
               </div>
               <div className="flex justify-between py-3">
                 <dt className="text-slate-500">Position GPS</dt>
@@ -400,12 +409,12 @@ export default function SignalementPage() {
                 </div>
               )}
             </dl>
- 
+
             <div className="bg-blue-50 text-blue-700 text-xs rounded-xl px-4 py-3">
               Le niveau de gravité sera déterminé automatiquement après analyse de votre description
               et de votre photo.
             </div>
- 
+
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
@@ -429,3 +438,17 @@ export default function SignalementPage() {
     </section>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

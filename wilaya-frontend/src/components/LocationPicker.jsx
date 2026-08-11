@@ -6,18 +6,31 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { Search, MapPin, Loader2 } from 'lucide-react';
- 
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
 });
- 
+
 const CENTRE_PAR_DEFAUT = [34.6805, -1.9089];
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
 const VIEWBOX_ORIENTAL = '-3.6,35.6,-1.0,32.0';
- 
+
+function extraireZone(address) {
+  if (!address) return '';
+  return (
+    address.quarter ||
+    address.neighbourhood ||
+    address.suburb ||
+    address.city_district ||
+    address.town ||
+    address.village ||
+    ''
+  );
+}
+
 function ClicCarte({ onSelect }) {
   useMapEvents({
     click(e) {
@@ -26,7 +39,7 @@ function ClicCarte({ onSelect }) {
   });
   return null;
 }
- 
+
 function RecentrerCarte({ position, zoom }) {
   const map = useMap();
   useEffect(() => {
@@ -36,17 +49,17 @@ function RecentrerCarte({ position, zoom }) {
   }, [position, zoom, map]);
   return null;
 }
- 
-export default function LocationPicker({ latitude, longitude, onChange, height = '280px' }) {
+
+export default function LocationPicker({ latitude, longitude, onChange, onLieuResolu, height = '280px' }) {
   const position = latitude && longitude ? [latitude, longitude] : null;
- 
+
   const [recherche, setRecherche] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [rechercheEnCours, setRechercheEnCours] = useState(false);
   const [adresseResolue, setAdresseResolue] = useState('');
   const [volEnCours, setVolEnCours] = useState(null);
   const debounceRef = useRef(null);
- 
+
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (recherche.trim().length < 3) {
@@ -75,7 +88,7 @@ export default function LocationPicker({ latitude, longitude, onChange, height =
     }, 400);
     return () => clearTimeout(debounceRef.current);
   }, [recherche]);
- 
+
   const choisirSuggestion = (s) => {
     const lat = parseFloat(s.lat);
     const lon = parseFloat(s.lon);
@@ -84,24 +97,26 @@ export default function LocationPicker({ latitude, longitude, onChange, height =
     setRecherche(s.display_name);
     setSuggestions([]);
     setVolEnCours([lat, lon]);
+    onLieuResolu?.({ adresse: s.display_name, zone: extraireZone(s.address) });
   };
- 
+
   const geocoderInverse = useCallback(async (lat, lng) => {
     try {
-      const params = new URLSearchParams({ lat, lon: lng, format: 'jsonv2' });
+      const params = new URLSearchParams({ lat, lon: lng, format: 'jsonv2', addressdetails: '1' });
       const res = await fetch(`${NOMINATIM_BASE}/reverse?${params}`);
       const data = await res.json();
       setAdresseResolue(data.display_name || '');
+      onLieuResolu?.({ adresse: data.display_name || '', zone: extraireZone(data.address) });
     } catch {
       setAdresseResolue('');
     }
-  }, []);
- 
+  }, [onLieuResolu]);
+
   const gererClicCarte = (lat, lng) => {
     onChange(lat, lng);
     geocoderInverse(lat, lng);
   };
- 
+
   return (
     <div className="space-y-2">
       <div className="relative">
@@ -116,7 +131,7 @@ export default function LocationPicker({ latitude, longitude, onChange, height =
           />
           {rechercheEnCours && <Loader2 className="w-4 h-4 text-slate-400 animate-spin shrink-0" />}
         </div>
- 
+
         {suggestions.length > 0 && (
           <ul className="absolute z-[1000] w-full bg-white border border-slate-200 rounded-xl mt-1 shadow-lg max-h-56 overflow-y-auto">
             {suggestions.map((s) => (
@@ -134,7 +149,7 @@ export default function LocationPicker({ latitude, longitude, onChange, height =
           </ul>
         )}
       </div>
- 
+
       <div className="rounded-xl overflow-hidden border border-slate-200" style={{ height }}>
         <MapContainer
           center={position || CENTRE_PAR_DEFAUT}
@@ -150,38 +165,20 @@ export default function LocationPicker({ latitude, longitude, onChange, height =
           <RecentrerCarte position={volEnCours} zoom={17} />
         </MapContainer>
       </div>
- 
+
       {adresseResolue && (
         <p className="text-xs text-slate-500 flex items-start gap-1.5">
           <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-blue-600" />
           {adresseResolue}
         </p>
       )}
- 
+
       <p className="text-xs text-slate-400">
         Utilisez la recherche ci-dessus pour un point précis, ou zoomez avant de cliquer sur la carte.
       </p>
     </div>
   );
 }
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
