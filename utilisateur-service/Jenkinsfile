@@ -32,23 +32,16 @@ pipeline {
             }
         }
 
-        // ---- STAGE TEMPORAIRE DE DEBUG ----
-        // A retirer une fois le probleme de cle NVD resolu.
-        // Affiche uniquement la LONGUEUR de la cle (jamais la valeur),
-        // pour verifier qu'elle correspond bien aux 36 caracteres attendus.
-        stage('Debug NVD Key Length') {
-            steps {
-                sh 'echo "Longueur de la cle NVD_API_KEY : ${#NVD_API_KEY} caracteres"'
-            }
-        }
-
         stage('OWASP Dependency-Check') {
             steps {
                 dir('utilisateur-service') {
-                    // Utilise le plugin ajouté dans le pom.xml (voir section pom.xml).
-                    // failBuildOnCVSS=7 dans le pom fait echouer ce stage si une
-                    // vulnerabilite HIGH/CRITICAL est detectee dans les dependances.
-                    sh 'mvn org.owasp:dependency-check-maven:check -B'
+                    // La clé est passée en ligne de commande et un délai est ajouté
+                    // pour éviter les erreurs 403/404 dues aux limites de l'API NVD.
+                    sh """
+                        mvn org.owasp:dependency-check-maven:check -B \
+                        -DnvdApiKey=${NVD_API_KEY} \
+                        -DnvdApiDelay=2000
+                    """
                 }
             }
             post {
