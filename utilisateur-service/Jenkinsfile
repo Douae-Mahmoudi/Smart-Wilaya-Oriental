@@ -32,10 +32,10 @@ pipeline {
             }
         }
 
-        // Étape de diagnostic réseau (optionnelle, peut être supprimée après résolution)
+        // Étape de diagnostic (optionnelle, gardée pour confirmer la connectivité)
         stage('Test NVD Network') {
             steps {
-                sh 'curl -s -o /dev/null -w "%{http_code}" https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1 || echo "Échec réseau"'
+                sh 'curl -s -o /dev/null -w "%{http_code}" https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1'
             }
         }
 
@@ -44,17 +44,13 @@ pipeline {
                 dir('utilisateur-service') {
                     catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
                         sh '''
-                            # Écrire la clé dans un fichier temporaire pour éviter les problèmes d'interpolation
-                            echo "$NVD_API_KEY" > /tmp/nvd.key
-                            # Lancer le scan avec la clé lue depuis le fichier
+                            # Nettoyer la clé (supprimer les sauts de ligne et espaces)
+                            echo -n "$NVD_API_KEY" | tr -d '\\n\\r' > /tmp/nvd.key
+                            # Lancer le scan avec debug (-X) pour voir les échanges
                             mvn org.owasp:dependency-check-maven:check -B \
                                 -DnvdApiKey=$(cat /tmp/nvd.key) \
-                                -DnvdApiDelay=5000 \
-                                # Décommenter les lignes suivantes si vous utilisez un proxy
-                                # -Dhttp.proxyHost=proxy.example.com \
-                                # -Dhttp.proxyPort=8080 \
-                                # -Dhttps.proxyHost=proxy.example.com \
-                                # -Dhttps.proxyPort=8080
+                                -DnvdApiDelay=10000 \
+                                -X
                             rm -f /tmp/nvd.key
                         '''
                     }
