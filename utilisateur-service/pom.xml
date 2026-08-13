@@ -99,7 +99,8 @@
                         <format>HTML</format>
                         <format>JSON</format>
                     </formats>
-                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                    <!-- La ligne nvdApiKey a été supprimée pour éviter les conflits avec le paramètre système.
+                         La clé sera fournie via la ligne de commande dans le pipeline Jenkins. -->
                 </configuration>
             </plugin>
             <plugin>
