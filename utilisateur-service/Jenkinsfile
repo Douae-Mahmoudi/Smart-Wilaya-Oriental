@@ -32,10 +32,15 @@ pipeline {
             }
         }
 
-        // Étape de diagnostic réseau (optionnelle mais utile)
-        stage('Test NVD Network') {
+        // Diagnostic réseau avec la clé API pour confirmer que l'accès NVD fonctionne depuis Jenkins
+        stage('Test NVD Network with Key') {
             steps {
-                sh 'curl -s -o /dev/null -w "%{http_code}" https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1'
+                sh '''
+                    echo "Test de l'API NVD avec la clé (statut HTTP) :"
+                    curl -s -o /dev/null -w "Status: %{http_code}\\n" \
+                        -H "apiKey: $NVD_API_KEY" \
+                        "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1"
+                '''
             }
         }
 
@@ -44,7 +49,9 @@ pipeline {
                 dir('utilisateur-service') {
                     catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
                         sh '''
+                            # Nettoyer la clé (retirer les sauts de ligne)
                             echo -n "$NVD_API_KEY" | tr -d '\\n\\r' > /tmp/nvd.key
+                            # Lancer le scan avec la version 10.0.1 du plugin (vérifier pom.xml)
                             mvn org.owasp:dependency-check-maven:check -B \
                                 -DnvdApiKey=$(cat /tmp/nvd.key) \
                                 -DnvdApiDelay=10000
@@ -56,10 +63,12 @@ pipeline {
             post {
                 always {
                     script {
-                        // On archive seulement si le rapport existe
+                        // Archiver le rapport s'il existe
                         if (fileExists('utilisateur-service/target/dependency-check-report.html')) {
                             archiveArtifacts artifacts: 'utilisateur-service/target/dependency-check-report.*',
                                               allowEmptyArchive: true
+                        } else {
+                            echo "Rapport OWASP non trouvé (peut-être l'étape a échoué trop tôt)."
                         }
                     }
                 }
@@ -90,7 +99,7 @@ pipeline {
                             echo "Quality Gate status: ${qg.status}"
                         }
                     } catch (Exception e) {
-                        echo "Quality Gate check ignore (webhook non configure) : ${e.message}"
+                        echo "Quality Gate check ignorée (webhook non configuré) : ${e.message}"
                     }
                 }
             }
@@ -99,6 +108,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 dir('utilisateur-service') {
+                    // On s'assure que le socket est accessible (si le chmod a été fait, ça passe)
                     sh "docker build -t ${DOCKER_IMAGE}:latest ."
                 }
             }
@@ -107,7 +117,7 @@ pipeline {
         stage('Trivy Scan') {
             steps {
                 script {
-                    // Limiter le temps et la mémoire pour éviter le crash
+                    // Limiter le temps pour éviter les crashes longs
                     try {
                         timeout(time: 15, unit: 'MINUTES') {
                             sh """
@@ -145,13 +155,13 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline utilisateur-service terminee avec succes (build + tests + securite OK)"
+            echo "Pipeline utilisateur-service terminée avec succès (build + tests + sécurité OK)"
         }
         unstable {
             echo "Pipeline terminé avec des avertissements (certaines vérifications de sécurité ont échoué)"
         }
         failure {
-            echo "Pipeline utilisateur-service a echoue"
+            echo "Pipeline utilisateur-service a échoué"
         }
     }
 }
