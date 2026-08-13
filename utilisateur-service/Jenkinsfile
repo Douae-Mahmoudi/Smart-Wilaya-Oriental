@@ -32,6 +32,16 @@ pipeline {
             }
         }
 
+        // ---- STAGE TEMPORAIRE DE DEBUG ----
+        // A retirer une fois le probleme de cle NVD resolu.
+        // Affiche uniquement la LONGUEUR de la cle (jamais la valeur),
+        // pour verifier qu'elle correspond bien aux 36 caracteres attendus.
+        stage('Debug NVD Key Length') {
+            steps {
+                sh 'echo "Longueur de la cle NVD_API_KEY : ${#NVD_API_KEY} caracteres"'
+            }
+        }
+
         stage('OWASP Dependency-Check') {
             steps {
                 dir('utilisateur-service') {
@@ -89,10 +99,6 @@ pipeline {
 
         stage('Trivy Scan') {
             steps {
-                // Utilise l'image officielle Trivy via Docker : aucune installation
-                // supplementaire necessaire sur l'agent Jenkins (Docker est deja present).
-                // --exit-code 1 fait echouer ce stage (et donc bloquer le Docker Push
-                // suivant) uniquement si une vulnerabilite HIGH ou CRITICAL est trouvee.
                 sh """
                     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
                         aquasec/trivy image \
