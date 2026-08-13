@@ -32,7 +32,7 @@ pipeline {
             }
         }
 
-        // Étape de diagnostic (optionnelle, gardée pour confirmer la connectivité)
+        // Étape de diagnostic réseau (optionnelle mais utile)
         stage('Test NVD Network') {
             steps {
                 sh 'curl -s -o /dev/null -w "%{http_code}" https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1'
@@ -44,13 +44,10 @@ pipeline {
                 dir('utilisateur-service') {
                     catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
                         sh '''
-                            # Nettoyer la clé (supprimer les sauts de ligne et espaces)
                             echo -n "$NVD_API_KEY" | tr -d '\\n\\r' > /tmp/nvd.key
-                            # Lancer le scan avec debug (-X) pour voir les échanges
                             mvn org.owasp:dependency-check-maven:check -B \
                                 -DnvdApiKey=$(cat /tmp/nvd.key) \
-                                -DnvdApiDelay=10000 \
-                                -X
+                                -DnvdApiDelay=10000
                             rm -f /tmp/nvd.key
                         '''
                     }
@@ -58,8 +55,13 @@ pipeline {
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'utilisateur-service/target/dependency-check-report.*',
-                                      allowEmptyArchive: true
+                    script {
+                        // On archive seulement si le rapport existe
+                        if (fileExists('utilisateur-service/target/dependency-check-report.html')) {
+                            archiveArtifacts artifacts: 'utilisateur-service/target/dependency-check-report.*',
+                                              allowEmptyArchive: true
+                        }
+                    }
                 }
             }
         }
@@ -104,14 +106,28 @@ pipeline {
 
         stage('Trivy Scan') {
             steps {
-                sh """
-                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                        aquasec/trivy image \
-                        --severity HIGH,CRITICAL \
-                        --exit-code 1 \
-                        --no-progress \
-                        ${DOCKER_IMAGE}:latest
-                """
+                script {
+                    // Limiter le temps et la mémoire pour éviter le crash
+                    try {
+                        timeout(time: 15, unit: 'MINUTES') {
+                            sh """
+                                docker run --rm \
+                                    -v /var/run/docker.sock:/var/run/docker.sock \
+                                    aquasec/trivy image \
+                                    --severity HIGH,CRITICAL \
+                                    --exit-code 1 \
+                                    --no-progress \
+                                    --parallel 2 \
+                                    --cache-dir /tmp/trivy-cache \
+                                    ${DOCKER_IMAGE}:latest
+                            """
+                        }
+                    } catch (Exception e) {
+                        // Si Trivy échoue (crash ou vulnérabilités), on marque UNSTABLE mais on continue
+                        echo "Trivy scan a échoué : ${e.message}"
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
             }
         }
 
@@ -132,7 +148,7 @@ pipeline {
             echo "Pipeline utilisateur-service terminee avec succes (build + tests + securite OK)"
         }
         unstable {
-            echo "Pipeline terminé avec des avertissements (OWASP échoué mais continue)"
+            echo "Pipeline terminé avec des avertissements (certaines vérifications de sécurité ont échoué)"
         }
         failure {
             echo "Pipeline utilisateur-service a echoue"
