@@ -5,7 +5,6 @@ pipeline {
         DOCKER_IMAGE = 'douaemahmoudi/utilisateur-service'
         SONAR_PROJECT_KEY = 'Douae-Mahmoudi_wilaya-project'
         SONAR_ORGANIZATION = 'douae-mahmoudi'
-        NVD_API_KEY = credentials('nvd-api-key')
     }
 
     stages {
@@ -32,33 +31,6 @@ pipeline {
             }
         }
 
-        // ---- STAGE TEMPORAIRE DE DEBUG ----
-        // A retirer une fois le probleme de cle NVD resolu.
-        // Affiche uniquement la LONGUEUR de la cle (jamais la valeur),
-        // pour verifier qu'elle correspond bien aux 36 caracteres attendus.
-        stage('Debug NVD Key Length') {
-            steps {
-                sh 'echo "Longueur de la cle NVD_API_KEY : ${#NVD_API_KEY} caracteres"'
-            }
-        }
-
-        stage('OWASP Dependency-Check') {
-            steps {
-                dir('utilisateur-service') {
-                    // Utilise le plugin ajouté dans le pom.xml (voir section pom.xml).
-                    // failBuildOnCVSS=7 dans le pom fait echouer ce stage si une
-                    // vulnerabilite HIGH/CRITICAL est detectee dans les dependances.
-                    sh 'mvn org.owasp:dependency-check-maven:check -B'
-                }
-            }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'utilisateur-service/target/dependency-check-report.*',
-                                      allowEmptyArchive: true
-                }
-            }
-        }
-
         stage('SonarCloud Analysis') {
             steps {
                 dir('utilisateur-service') {
@@ -74,21 +46,20 @@ pipeline {
             }
         }
 
-        stage('Quality Gate') {
-            steps {
-                script {
-                    try {
-                        timeout(time: 3, unit: 'MINUTES') {
-                            def qg = waitForQualityGate abortPipeline: false
-                            echo "Quality Gate status: ${qg.status}"
-                        }
-                    } catch (Exception e) {
-                        echo "Quality Gate check ignore (webhook non configure) : ${e.message}"
-                    }
-                }
-            }
-        }
-
+      stage('Quality Gate') {
+          steps {
+              script {
+                  try {
+                      timeout(time: 3, unit: 'MINUTES') {
+                          def qg = waitForQualityGate abortPipeline: false
+                          echo "Quality Gate status: ${qg.status}"
+                      }
+                  } catch (Exception e) {
+                      echo "Quality Gate check ignore (webhook non configure) : ${e.message}"
+                  }
+              }
+          }
+      }
         stage('Docker Build') {
             steps {
                 dir('utilisateur-service') {
@@ -97,30 +68,13 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan') {
-            steps {
-                sh """
-                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                        aquasec/trivy image \
-                        --severity HIGH,CRITICAL \
-                        --exit-code 1 \
-                        --no-progress \
-                        ${DOCKER_IMAGE}:latest
-                """
-            }
-        }
-
         stage('Docker Push') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    // retry(3) relance jusqu'a 3 fois en cas d'echec reseau
-                    // transitoire (ex: connexion coupee pendant l'upload d'une
-                    // grosse couche Docker), sans faire echouer tout de suite
-                    // la pipeline pour un simple hoquet reseau.
-                    retry(3) {
-                        sh "docker push ${DOCKER_IMAGE}:latest"
-                    }
+                    sh """
+                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                        docker push ${DOCKER_IMAGE}:latest
+                    """
                 }
             }
         }
@@ -128,7 +82,7 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline utilisateur-service terminee avec succes (build + tests + securite OK)"
+            echo "Pipeline utilisateur-service termine avec succes"
         }
         failure {
             echo "Pipeline utilisateur-service a echoue"

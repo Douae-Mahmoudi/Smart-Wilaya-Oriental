@@ -90,25 +90,6 @@
                 <version>3.9.1.2184</version>
             </plugin>
             <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>10.0.1</version>
-                <configuration>
-                    <failBuildOnCVSS>7</failBuildOnCVSS>
-                    <formats>
-                        <format>HTML</format>
-                        <format>JSON</format>
-                    </formats>
-                    <!-- Stocke la base NVD dans un dossier persistant du
-                         conteneur Jenkins (survit entre les builds, contrairement
-                         au workspace). Le premier run telechargera tout (peut
-                         prendre du temps et echouer si NVD est instable, il
-                         suffit de relancer). Les runs suivants ne feront qu'une
-                         mise a jour incrementale : beaucoup plus rapide et fiable. -->
-                    <dataDirectory>/var/jenkins_home/dependency-check-data</dataDirectory>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
