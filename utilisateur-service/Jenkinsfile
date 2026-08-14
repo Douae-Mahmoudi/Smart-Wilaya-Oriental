@@ -32,45 +32,29 @@ pipeline {
             }
         }
 
-        // Diagnostic réseau avec la clé API pour confirmer que l'accès NVD fonctionne depuis Jenkins
-        stage('Test NVD Network with Key') {
+        // ---- STAGE TEMPORAIRE DE DEBUG ----
+        // A retirer une fois le probleme de cle NVD resolu.
+        // Affiche uniquement la LONGUEUR de la cle (jamais la valeur),
+        // pour verifier qu'elle correspond bien aux 36 caracteres attendus.
+        stage('Debug NVD Key Length') {
             steps {
-                sh '''
-                    echo "Test de l'API NVD avec la clé (statut HTTP) :"
-                    curl -s -o /dev/null -w "Status: %{http_code}\\n" \
-                        -H "apiKey: $NVD_API_KEY" \
-                        "https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1"
-                '''
+                sh 'echo "Longueur de la cle NVD_API_KEY : ${#NVD_API_KEY} caracteres"'
             }
         }
 
         stage('OWASP Dependency-Check') {
             steps {
                 dir('utilisateur-service') {
-                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                        sh '''
-                            # Nettoyer la clé (retirer les sauts de ligne)
-                            echo -n "$NVD_API_KEY" | tr -d '\\n\\r' > /tmp/nvd.key
-                            # Lancer le scan avec la version 10.0.1 du plugin (vérifier pom.xml)
-                            mvn org.owasp:dependency-check-maven:check -B \
-                                -DnvdApiKey=$(cat /tmp/nvd.key) \
-                                -DnvdApiDelay=10000
-                            rm -f /tmp/nvd.key
-                        '''
-                    }
+                    // Utilise le plugin ajouté dans le pom.xml (voir section pom.xml).
+                    // failBuildOnCVSS=7 dans le pom fait echouer ce stage si une
+                    // vulnerabilite HIGH/CRITICAL est detectee dans les dependances.
+                    sh 'mvn org.owasp:dependency-check-maven:check -B'
                 }
             }
             post {
                 always {
-                    script {
-                        // Archiver le rapport s'il existe
-                        if (fileExists('utilisateur-service/target/dependency-check-report.html')) {
-                            archiveArtifacts artifacts: 'utilisateur-service/target/dependency-check-report.*',
-                                              allowEmptyArchive: true
-                        } else {
-                            echo "Rapport OWASP non trouvé (peut-être l'étape a échoué trop tôt)."
-                        }
-                    }
+                    archiveArtifacts artifacts: 'utilisateur-service/target/dependency-check-report.*',
+                                      allowEmptyArchive: true
                 }
             }
         }
@@ -99,7 +83,7 @@ pipeline {
                             echo "Quality Gate status: ${qg.status}"
                         }
                     } catch (Exception e) {
-                        echo "Quality Gate check ignorée (webhook non configuré) : ${e.message}"
+                        echo "Quality Gate check ignore (webhook non configure) : ${e.message}"
                     }
                 }
             }
@@ -108,7 +92,6 @@ pipeline {
         stage('Docker Build') {
             steps {
                 dir('utilisateur-service') {
-                    // On s'assure que le socket est accessible (si le chmod a été fait, ça passe)
                     sh "docker build -t ${DOCKER_IMAGE}:latest ."
                 }
             }
@@ -116,38 +99,28 @@ pipeline {
 
         stage('Trivy Scan') {
             steps {
-                script {
-                    // Limiter le temps pour éviter les crashes longs
-                    try {
-                        timeout(time: 15, unit: 'MINUTES') {
-                            sh """
-                                docker run --rm \
-                                    -v /var/run/docker.sock:/var/run/docker.sock \
-                                    aquasec/trivy image \
-                                    --severity HIGH,CRITICAL \
-                                    --exit-code 1 \
-                                    --no-progress \
-                                    --parallel 2 \
-                                    --cache-dir /tmp/trivy-cache \
-                                    ${DOCKER_IMAGE}:latest
-                            """
-                        }
-                    } catch (Exception e) {
-                        // Si Trivy échoue (crash ou vulnérabilités), on marque UNSTABLE mais on continue
-                        echo "Trivy scan a échoué : ${e.message}"
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
+                sh """
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy image \
+                        --severity HIGH,CRITICAL \
+                        --exit-code 1 \
+                        --no-progress \
+                        ${DOCKER_IMAGE}:latest
+                """
             }
         }
 
         stage('Docker Push') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                        docker push ${DOCKER_IMAGE}:latest
-                    """
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    // retry(3) relance jusqu'a 3 fois en cas d'echec reseau
+                    // transitoire (ex: connexion coupee pendant l'upload d'une
+                    // grosse couche Docker), sans faire echouer tout de suite
+                    // la pipeline pour un simple hoquet reseau.
+                    retry(3) {
+                        sh "docker push ${DOCKER_IMAGE}:latest"
+                    }
                 }
             }
         }
@@ -155,13 +128,10 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline utilisateur-service terminée avec succès (build + tests + sécurité OK)"
-        }
-        unstable {
-            echo "Pipeline terminé avec des avertissements (certaines vérifications de sécurité ont échoué)"
+            echo "Pipeline utilisateur-service terminee avec succes (build + tests + securite OK)"
         }
         failure {
-            echo "Pipeline utilisateur-service a échoué"
+            echo "Pipeline utilisateur-service a echoue"
         }
     }
 }
