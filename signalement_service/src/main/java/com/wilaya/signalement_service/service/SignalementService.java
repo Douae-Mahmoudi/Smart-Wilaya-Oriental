@@ -1,4 +1,5 @@
 package com.wilaya.signalement_service.service;
+
 import java.time.LocalDateTime;
 import com.wilaya.signalement_service.dto.CreerSignalementRequest;
 import com.wilaya.signalement_service.dto.SimilaireResoluResponse;
@@ -196,11 +197,6 @@ public class SignalementService {
                     request.description(), existant.getDescription()
             );
 
-            // Si les deux signalements sont géolocalisés quasiment au même endroit
-            // (à quelques mètres près) et sont du même type, la coïncidence de lieu
-            // est déjà une preuve très forte de doublon : on n'exige plus qu'un seuil
-            // de similarité texte réduit, juste pour écarter le cas de deux problèmes
-            // réellement différents signalés depuis le même point.
             boolean localisationQuasiExacte = distance != null && distance <= distanceQuasiExacteMeters;
             double seuilApplique = localisationQuasiExacte ? similarityThresholdLocalisationExacte : similarityThreshold;
 
@@ -322,86 +318,3 @@ public class SignalementService {
         repository.save(signalement);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

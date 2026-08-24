@@ -79,9 +79,6 @@ public class TentativeAffectation {
         if (this.statut != StatutTentative.EN_ATTENTE) {
             throw new IllegalStateException("Impossible d'accepter une tentative avec le statut " + this.statut);
         }
-        // Vérification du délai supprimée : l'agent peut accepter même après
-        // les 15 minutes (dateExpiration reste stockée à titre indicatif,
-        // mais n'est plus utilisée pour bloquer l'acceptation).
         this.statut = StatutTentative.ACCEPTEE;
         this.idAgentAccepteur = idAgent;
         this.dateReponse = LocalDateTime.now(java.time.ZoneOffset.UTC);

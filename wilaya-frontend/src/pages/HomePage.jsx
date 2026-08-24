@@ -8,9 +8,10 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+            <Cta />
+
       <Features />
       <Lifecycle />
-      <Cta />
     </>
   );
 }

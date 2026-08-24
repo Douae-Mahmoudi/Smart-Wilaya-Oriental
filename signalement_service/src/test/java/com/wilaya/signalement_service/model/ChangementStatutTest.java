@@ -55,8 +55,6 @@ class ChangementStatutTest {
 
     @Test
     void id_devrait_etre_null_avant_persistance() {
-        // @GeneratedValue -> l'id n'est attribué qu'à l'enregistrement en
-        // base par JPA/Hibernate, jamais par le constructeur lui-même.
         ChangementStatut changement = new ChangementStatut(signalementExemple(), StatutSignalement.AFFECTE, "Affecté");
 
         assertThat(changement.getId()).isNull();
