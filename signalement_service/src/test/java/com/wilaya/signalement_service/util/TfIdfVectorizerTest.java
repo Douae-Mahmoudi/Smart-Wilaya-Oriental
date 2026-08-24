@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.within;
 class TfIdfVectorizerTest {
 
     private TfIdfVectorizer vectorizer;
+    
 
     @BeforeEach
     void setUp() {
